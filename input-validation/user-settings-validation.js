@@ -65,6 +65,50 @@ const validateAuthentication = (method) => {
 					.withMessage("OTP must be 6 characters long"),
 			];
 		}
+		case "deleteAccount": {
+			return [
+				check("password")
+					.not()
+					.isEmpty()
+					.withMessage("Password can not be empty")
+					.isLength({ min: 6, max: 15 })
+					.withMessage(
+						"Password should be between 6 and 15 characters long."
+					)
+					.matches(/^[A-Za-z0-9\-\_]*$/)
+					.withMessage(
+						"Password should contain only letters, numbers special characters (_, -)"
+					),
+			];
+		}
+		case "changePassword": {
+			return [
+				check("oldPassword")
+					.not()
+					.isEmpty()
+					.withMessage("Password can not be empty")
+					.isLength({ min: 6, max: 15 })
+					.withMessage(
+						"Password should be between 6 and 15 characters long."
+					)
+					.matches(/^[A-Za-z0-9\-\_]*$/)
+					.withMessage(
+						"Password should contain only letters, numbers special characters (_, -)"
+					),
+				check("newPassword")
+					.not()
+					.isEmpty()
+					.withMessage("Password can not be empty")
+					.isLength({ min: 6, max: 15 })
+					.withMessage(
+						"Password should be between 6 and 15 characters long."
+					)
+					.matches(/^[A-Za-z0-9\-\_]*$/)
+					.withMessage(
+						"Password should contain only letters, numbers special characters (_, -)"
+					),
+			];
+		}
 	}
 };
 

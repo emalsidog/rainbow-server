@@ -218,3 +218,81 @@ exports.changeEmailAbort = async (req, res, next) => {
 		next(error);
 	}
 };
+
+// DELETE ACCOUNT
+
+exports.deleteAccount = async (req, res, next) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		const message = errors.array()[0].msg;
+		return next(new ErrorResponse(message, 422));
+	}
+
+	const { password } = req.body;
+	try {
+		const user = await User.findById(req.user._id);
+
+		if (!user) {
+			return next(new ErrorResponse("Account does not exist", 400));
+		}
+
+		const isMatch = await user.comparePasswords(password);
+		if (!isMatch) {
+			return next(new ErrorResponse("Password is incorrect", 400));
+		}
+
+		await user.remove();
+
+		res.clearCookie("accessToken")
+			.clearCookie("refreshToken")
+			.status(200)
+			.json({
+				status: {
+					isError: false,
+					message: "Your account was successfully deleted",
+				},
+			});
+	} catch (error) {
+		next(error);
+	}
+};
+
+// CHANGE PASSWORD
+
+exports.changePassword = async (req, res, next) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		const message = errors.array()[0].msg;
+		return next(new ErrorResponse(message, 422));
+	}
+
+	const { oldPassword, newPassword, confirmNewPassword } = req.body;
+
+	try {
+		if (newPassword !== confirmNewPassword) {
+			return next(new ErrorResponse("Passwords do not match", 400));
+		}
+
+		const user = await User.findById(req.user._id);
+		if (!user) {
+			return next(new ErrorResponse("Account does not exist", 400));
+		}
+
+		const isMatch = await user.comparePasswords(oldPassword);
+		if (!isMatch) {
+			return next(new ErrorResponse("Password is incorrect", 400));
+		}
+
+		user.password = newPassword;
+		await user.save();
+
+		res.status(200).json({
+			status: {
+				isError: false,
+				message: "Saved",
+			},
+		});
+	} catch (error) {
+		next(error);
+	}
+};

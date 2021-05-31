@@ -2,6 +2,7 @@
 const jwt = require("jsonwebtoken");
 const customAlphabet = require("nanoid").customAlphabet;
 const { validationResult } = require("express-validator");
+const WebServiceClient = require('@maxmind/geoip2-node').WebServiceClient;
 
 // Models
 const User = require("../models/User");
@@ -9,6 +10,11 @@ const User = require("../models/User");
 // Utils
 const sendMail = require("../utils/send-mail");
 const ErrorResponse = require("../utils/error-response");
+
+// IP CLIENT
+const client = new WebServiceClient("559966", "XFgENwGMXSK6XRBD", {
+	host: "geolite.info",
+});
 
 // REGISTER
 
@@ -210,6 +216,16 @@ exports.login = async (req, res, next) => {
 			profileId: user.profileId,
 		};
 
+		// Getting IP from where was request
+		// const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+		// Looking for country with the help of web client of MAX MIND
+		// const city = await client.city("185.118.40.1");
+		// console.log(city.continent);
+		// console.log(city.country);
+		// console.log(city.city);
+		// console.log(city.postal);
+
 		// Send Access token to the client
 		res.cookie("accessToken", accessToken, {
 			// secure: true,
@@ -231,7 +247,7 @@ exports.login = async (req, res, next) => {
 				changingEmailProcess: {
 					timeToNextEmail: user.email.nextEmailAvailableIn,
 					isChangingProcess: user.email.isChangingProcess,
-					newEmail: user.email.newEmail
+					newEmail: user.email.newEmail,
 				},
 			},
 		});
@@ -455,7 +471,7 @@ exports.getCurrentUser = (req, res, next) => {
 			changingEmailProcess: {
 				timeToNextEmail: req.user.email.nextEmailAvailableIn,
 				isChangingProcess: req.user.email.isChangingProcess,
-				newEmail: req.user.email.newEmail
+				newEmail: req.user.email.newEmail,
 			},
 		},
 	});

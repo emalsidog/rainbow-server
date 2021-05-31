@@ -18,4 +18,8 @@ router.post("/change-email", authenticate, validate("changeEmail"), Settings.cha
 
 router.get("/change-email-abort", authenticate, Settings.changeEmailAbort);
 
+router.post("/delete", authenticate, validate("deleteAccount"), Settings.deleteAccount);
+
+router.post("/change-password", authenticate, validate("changePassword"), Settings.changePassword);
+
 module.exports = router;

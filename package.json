@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@maxmind/geoip2-node": "^2.3.2",
     "@sendgrid/mail": "^7.4.4",
     "bcrypt": "^5.0.1",
     "cookie-parser": "^1.4.5",
