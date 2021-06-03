@@ -109,6 +109,35 @@ const validateAuthentication = (method) => {
 					),
 			];
 		}
+		case "changeBio": {
+			return [
+				check("bio")
+					.isLength({ min: 0, max: 100 })
+					.withMessage("The maximum number of characters is 100"),
+			];
+		}
+		case "changeBirthday": {
+			return [
+				check("day")
+					.not()
+					.isEmpty()
+					.withMessage("Day can not be empty")
+					.matches(/^[0-9]*$/)
+					.withMessage("Day can be only numeric"),
+				check("month")
+					.not()
+					.isEmpty()
+					.withMessage("Month can not be empty")
+					.matches(/^[0-9]*$/)
+					.withMessage("Month can be only numeric"),
+				check("year")
+					.not()
+					.isEmpty()
+					.withMessage("Year can not be empty")
+					.matches(/^[0-9]*$/)
+					.withMessage("Year can be only numeric"),
+			];
+		}
 	}
 };
 

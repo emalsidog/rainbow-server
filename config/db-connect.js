@@ -9,7 +9,7 @@ const dbConnect = async () => {
             useCreateIndex: true,
 			useFindAndModify: false
 		});
-		console.log("Successfully connected to the database.");
+		console.log("Successfully connected to the database");
 	} catch (error) {
 		console.log(error);
 	}

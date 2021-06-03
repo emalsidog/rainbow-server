@@ -8,6 +8,25 @@ const UserSchema = new mongoose.Schema({
 		required: true,
 		unique: true,
 	},
+	avatar: {
+		linkToAvatar: {
+			type: String,
+			default: "http://localhost:4000/avatars/default.png",
+		},
+		fileName: {
+			type: String,
+			default: "default.png",
+			required: true,
+		},
+	},
+	bio: {
+		type: String,
+		default: "",
+	},
+	birthday: {
+		type: Date,
+		default: undefined,
+	},
 	givenName: {
 		type: String,
 		required: true,
@@ -40,9 +59,15 @@ const UserSchema = new mongoose.Schema({
 			default: undefined,
 		},
 	},
-	password: {
-		type: String,
-		required: true,
+	passwordData: {
+		password: {
+			type: String,
+			required: true,
+		},
+		lastTimeChanged: {
+			type: Date,
+			default: new Date(),
+		},
 	},
 	provider: {
 		type: String,
@@ -55,18 +80,21 @@ const UserSchema = new mongoose.Schema({
 });
 
 UserSchema.pre("save", async function (next) {
-	if (!this.isModified("password")) {
+	if (!this.isModified("passwordData.password")) {
 		next();
 	}
 
 	const salt = await bcrypt.genSalt(10);
-	this.password = await bcrypt.hash(this.password, salt);
+	this.passwordData.password = await bcrypt.hash(
+		this.passwordData.password,
+		salt
+	);
 
 	next();
 });
 
 UserSchema.methods.comparePasswords = async function (password) {
-	return await bcrypt.compare(password, this.password);
+	return await bcrypt.compare(password, this.passwordData.password);
 };
 
 module.exports = User = mongoose.model("User", UserSchema);

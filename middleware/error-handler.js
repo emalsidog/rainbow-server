@@ -10,14 +10,14 @@ const errorHandler = (err, req, res, next) => {
 
 	// Mongoose error code for duplicate key
 	if (err.code === 11000) {
-		const message = "Duplicated value.";
+		const message = "Duplicated value";
 		error = new ErrorResponse(message, 400);
 	}
 
 	res.status(error.statusCode || 500).json({
 		status: {
 			isError: true,
-			message: error.message || "Something went wrong... Please, try again later.",
+			message: error.message || "Something went wrong... Please, try again later",
 		},
 	});
 };

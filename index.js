@@ -18,7 +18,7 @@ app.use(cors({
 }));
 
 // Static files
-app.use(express.static('assets'));
+app.use(express.static("public"));
 
 // Body parser
 app.use(express.json());

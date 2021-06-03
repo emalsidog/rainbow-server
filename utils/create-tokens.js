@@ -1,7 +1,6 @@
+// Dependencies
 const jwt = require("jsonwebtoken");
 const { v4 } = require("uuid");
-
-const Token = require("../models/Token");
 
 exports.createAccessToken = (userId) => {
 	return jwt.sign({ userId }, process.env.ACCESS_TOKEN_SECRET, {

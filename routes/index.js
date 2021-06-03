@@ -1,4 +1,5 @@
-module.exports = app => {
-    app.use("/authentication", require("./authentication-routes"));
-    app.use("/settings", require("./user-routes"));
-}
+module.exports = (app) => {
+	app.use("/authentication", require("./authentication-routes"));
+	app.use("/settings", require("./user-routes"));
+	app.use("/users", require("./users-routes"));
+};

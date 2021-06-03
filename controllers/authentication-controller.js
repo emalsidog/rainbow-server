@@ -2,7 +2,7 @@
 const jwt = require("jsonwebtoken");
 const customAlphabet = require("nanoid").customAlphabet;
 const { validationResult } = require("express-validator");
-const WebServiceClient = require('@maxmind/geoip2-node').WebServiceClient;
+const WebServiceClient = require("@maxmind/geoip2-node").WebServiceClient;
 
 // Models
 const User = require("../models/User");
@@ -29,22 +29,20 @@ exports.register = async (req, res, next) => {
 		req.body;
 
 	if (password !== confirmPassword) {
-		return next(new ErrorResponse("Passwords do not match.", 400));
+		return next(new ErrorResponse("Passwords do not match", 400));
 	}
 
 	try {
 		const user = await User.findOne({ "email.address": email });
 		if (user) {
-			return next(new ErrorResponse("Email is already registered.", 400));
+			return next(new ErrorResponse("Email is already registered", 400));
 		}
 
 		const newUser = {
 			givenName,
 			familyName,
-			email: {
-				address: email,
-			},
-			password,
+			email: { address: email },
+			passwordData: { password },
 		};
 
 		const activationToken = createToken(
@@ -58,43 +56,44 @@ exports.register = async (req, res, next) => {
 			to: email,
 			subject: "Verify your identity | Rainbow",
 			html: `
-			<div style="max-width: 1000px;
-						margin: 0 auto;
-						padding: 10px;"
-			>
-				<img style="width: 100%;
-							max-width: 300px;
-							text-align: center;
-							display: block;
-							margin: 1rem auto;" 
-					 src="https://lh3.googleusercontent.com/F8J7NXygfWhoNd9rt5Lv0RQlRJhcnpvtwZkVx-JsliQRMYiSyfIRfMPesgROrSwlTUqO6uOKgrbVNHG_f6A5BdsCV2qUrXVqiz5BMcuG4qOhSjoy92GNw06KdMYBIogsM_pGjFF5T9X9zrYFvW125ydHVtinwj3BEMPKebL0qRG49cvufs4BLOUCleNyceaY0Eh9_Yk9lsVbLVpMLWkX9V7_pT8huFnZFi0otJd0CL2z7cMajqU8RSyv_Ov3ZRMWOcYlerGKd7he2c7EH0K6k0xgA1GNpxnaoJHd_-MFiHLNLKoGIcMus3BBHu6yrDjToX-t7ZVZFV4rQ-MPjhOdfU_w3e6OV5SODtbQUPx4HjabJTZMcP3YMqbYOU8buAaeqk2FtpyeSoYqmyNYR4jREVq8q8sL01tP2WTCNmhKuQgitUujVgmn4oYpTYRuert7XQ42ulp5ctueKvAQ-gvBghYl-wORcMpClpaVvZFug9wQZpel1GgqQYLIYnDVChdsjYxdBxbMeBcFUX8kXm5GRtgjMkQ0OTNrlyiSR-hCS47yx49-QYCJ3L9pidMq0J9pKW1F1bHdoIs1v-xzEyLxxVFXuz6VFcyJYjTcMdcoBlsR3_9K4UiwYRccxAzf1-ew8FmT8Ss43NB3x2uh2isa6NL3lgU8Gg2Lxywtr66z3fEL-NlLc4EZsgm9BD2FtDCG7S5mx0X3y7DuuaN6TR2OD70I=w1920-h690-no?authuser=0"
-				/>
-				<hr />
-				<div style="font-size: 30px;
-							padding: 10px 0;"
+				<div style="max-width: 1000px;
+							margin: 0 auto;
+							padding: 10px;"
 				>
-					Welcome to Rainbow!
+					<img style="width: 100%;
+								max-width: 300px;
+								text-align: center;
+								display: block;
+								margin: 1rem auto;" 
+						src="https://lh3.googleusercontent.com/F8J7NXygfWhoNd9rt5Lv0RQlRJhcnpvtwZkVx-JsliQRMYiSyfIRfMPesgROrSwlTUqO6uOKgrbVNHG_f6A5BdsCV2qUrXVqiz5BMcuG4qOhSjoy92GNw06KdMYBIogsM_pGjFF5T9X9zrYFvW125ydHVtinwj3BEMPKebL0qRG49cvufs4BLOUCleNyceaY0Eh9_Yk9lsVbLVpMLWkX9V7_pT8huFnZFi0otJd0CL2z7cMajqU8RSyv_Ov3ZRMWOcYlerGKd7he2c7EH0K6k0xgA1GNpxnaoJHd_-MFiHLNLKoGIcMus3BBHu6yrDjToX-t7ZVZFV4rQ-MPjhOdfU_w3e6OV5SODtbQUPx4HjabJTZMcP3YMqbYOU8buAaeqk2FtpyeSoYqmyNYR4jREVq8q8sL01tP2WTCNmhKuQgitUujVgmn4oYpTYRuert7XQ42ulp5ctueKvAQ-gvBghYl-wORcMpClpaVvZFug9wQZpel1GgqQYLIYnDVChdsjYxdBxbMeBcFUX8kXm5GRtgjMkQ0OTNrlyiSR-hCS47yx49-QYCJ3L9pidMq0J9pKW1F1bHdoIs1v-xzEyLxxVFXuz6VFcyJYjTcMdcoBlsR3_9K4UiwYRccxAzf1-ew8FmT8Ss43NB3x2uh2isa6NL3lgU8Gg2Lxywtr66z3fEL-NlLc4EZsgm9BD2FtDCG7S5mx0X3y7DuuaN6TR2OD70I=w1920-h690-no?authuser=0"
+					/>
+					<hr />
+					<div style="font-size: 30px;
+								padding: 10px 0;"
+					>
+						Welcome to Rainbow!
+					</div>
+					<p style="margin-top: 0;
+							margin-bottom: 40px;
+							font-size: 20px;"
+					>
+						To complete your registration process, please, confirm your
+						email address.
+					</p>
+					<div style="text-align: center;">
+						<a style="padding: 10px 15px;
+								background-color: #17beec;
+								color: white;
+								text-align: center;
+								text-decoration: none;
+								font-size: 20px;" 
+								href="${url}"
+						>
+							Confirm your emaill address
+						</a>
+					</div>
 				</div>
-				<p style="margin-top: 0;
-						  margin-bottom: 40px;
-						  font-size: 20px;"
-				>
-					To complete your registration process, please, confirm your
-					email address.
-				</p>
-				<div style="text-align: center;">
-					<a style="padding: 10px 15px;
-							background-color: #17beec;
-							color: white;
-							text-align: center;
-							text-decoration: none;
-							font-size: 20px;" 
-					href="${url}">
-						Confirm your emaill address
-					</a>
-				</div>
-			</div>
-			`,
+				`,
 		};
 
 		sendMail(emailOptions);
@@ -102,7 +101,8 @@ exports.register = async (req, res, next) => {
 		res.status(200).json({
 			status: {
 				isError: false,
-				message: "Verify your email!",
+				message:
+					"To complete registration process, please, confirm your email",
 			},
 		});
 	} catch (error) {
@@ -114,6 +114,7 @@ exports.register = async (req, res, next) => {
 
 exports.activate = async (req, res, next) => {
 	const { activationToken } = req.body;
+
 	try {
 		const user = jwt.verify(
 			activationToken,
@@ -123,23 +124,25 @@ exports.activate = async (req, res, next) => {
 		if (!user) {
 			return next(
 				new ErrorResponse(
-					"Your activation token is invalid or has expired.",
+					"Your activation link is invalid or has expired. Please, start the process again",
 					400
 				)
 			);
 		}
 
-		const { givenName, familyName, email, password } = user;
+		const { givenName, familyName, email, passwordData } = user;
 
+		// Check if user already exists
 		const existingUser = await User.findOne({
 			"email.address": email.address,
 		});
 		if (existingUser) {
 			return next(
-				new ErrorResponse("Account has been already activated.", 400)
+				new ErrorResponse("Account has been already activated", 400)
 			);
 		}
 
+		// Generating unique profileId
 		const nanoid = customAlphabet(
 			"0123456789abcdefghijklmnopqrstuvwxyz",
 			14
@@ -152,16 +155,16 @@ exports.activate = async (req, res, next) => {
 			email: {
 				address: email.address,
 			},
-			password,
+			passwordData,
 			provider: "local",
 		});
-
 		await newUser.save();
 
 		res.status(201).json({
 			status: {
 				isError: false,
-				message: "Account has been successfully activated.",
+				message:
+					"Account has been successfully activated. Please, login now",
 			},
 		});
 	} catch (error) {
@@ -177,20 +180,21 @@ exports.login = async (req, res, next) => {
 		const message = errors.array()[0].msg;
 		return next(new ErrorResponse(message, 422));
 	}
+
 	const { email, password } = req.body;
 
 	try {
 		const user = await User.findOne({ "email.address": email });
 		if (!user) {
 			return next(
-				new ErrorResponse("Email or password is incorrect.", 400)
+				new ErrorResponse("Email or password is incorrect", 400)
 			);
 		}
 
 		const isMatch = await user.comparePasswords(password);
 		if (!isMatch) {
 			return next(
-				new ErrorResponse("Email or password is incorrect.", 400)
+				new ErrorResponse("Email or password is incorrect", 400)
 			);
 		}
 
@@ -207,14 +211,6 @@ exports.login = async (req, res, next) => {
 			process.env.REFRESH_TOKEN_SECRET,
 			process.env.REFRESH_TOKEN_EXPIRE
 		);
-
-		// Create user to send
-		const userToSend = {
-			givenName: user.givenName,
-			familyName: user.familyName,
-			email: user.email.address,
-			profileId: user.profileId,
-		};
 
 		// Getting IP from where was request
 		// const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
@@ -240,10 +236,19 @@ exports.login = async (req, res, next) => {
 		res.status(200).json({
 			status: {
 				isError: false,
-				message: "Successfully logged in.",
+				message: "Successfully logged in",
 			},
 			body: {
-				user: userToSend,
+				user: {
+					avatar: user.avatar.linkToAvatar,
+					birthday: user.birthday,
+					bio: user.bio,
+					givenName: user.givenName,
+					familyName: user.familyName,
+					email: user.email.address,
+					profileId: user.profileId,
+					lastTimeChanged: user.passwordData.lastTimeChanged,
+				},
 				changingEmailProcess: {
 					timeToNextEmail: user.email.nextEmailAvailableIn,
 					isChangingProcess: user.email.isChangingProcess,
@@ -262,7 +267,7 @@ exports.refresh = async (req, res, next) => {
 	const refreshToken = req.cookies.refreshToken;
 
 	if (!refreshToken) {
-		return next(new ErrorResponse("Unauthorized.", 401));
+		return next(new ErrorResponse("Unauthorized", 401));
 	}
 
 	try {
@@ -301,12 +306,12 @@ exports.refresh = async (req, res, next) => {
 	} catch (error) {
 		if (error instanceof jwt.TokenExpiredError) {
 			return next(
-				new ErrorResponse("Unauthorized. Token has expired.", 401)
+				new ErrorResponse("Unauthorized. Token has expired", 401)
 			);
 		}
 		if (error instanceof jwt.JsonWebTokenError) {
 			return next(
-				new ErrorResponse("Unauthorized. Token is invalid.", 401)
+				new ErrorResponse("Unauthorized. Token is invalid", 401)
 			);
 		}
 		next(error);
@@ -319,7 +324,7 @@ exports.forgot = async (req, res, next) => {
 	const { email, timeToNextEmail = undefined } = req.body;
 
 	if (timeToNextEmail === undefined) {
-		return next(new ErrorResponse("Invalid request", 400));
+		return next(new ErrorResponse("Request is invalid", 400));
 	}
 
 	const currentTime = new Date().getTime();
@@ -327,7 +332,7 @@ exports.forgot = async (req, res, next) => {
 	try {
 		const user = await User.findOne({ "email.address": email });
 		if (!user) {
-			return next(new ErrorResponse("Email does not exist", 400));
+			return next(new ErrorResponse("Account does not exist", 400));
 		}
 
 		if (currentTime < timeToNextEmail) {
@@ -336,7 +341,7 @@ exports.forgot = async (req, res, next) => {
 
 		const payload = {
 			userId: user._id,
-			hash: user.password.substr(6, 13),
+			hash: user.passwordData.password.substr(6, 13),
 		};
 
 		const resetToken = createToken(
@@ -398,7 +403,7 @@ exports.forgot = async (req, res, next) => {
 		res.status(200).json({
 			status: {
 				isError: false,
-				message: "Your request is successful. Check your inbox.",
+				message: "Your request is successful. Check your inbox",
 			},
 			body: {
 				timeToNextEmail: currentTime + 1000 * 60 * 2,
@@ -426,28 +431,30 @@ exports.reset = async (req, res, next) => {
 
 		const user = await User.findById(userId);
 		if (!user) {
-			return next(new ErrorResponse("User does not exist.", 400));
+			return next(new ErrorResponse("Account does not exist", 400));
 		}
 
-		if (hash !== user.password.substr(6, 13)) {
-			return next(new ErrorResponse("Token has been already used.", 400));
+		if (hash !== user.passwordData.password.substr(6, 13)) {
+			return next(
+				new ErrorResponse("Your reset link has been already used", 400)
+			);
 		}
 
-		user.password = password;
+		user.passwordData.password = password;
 		await user.save();
 
 		res.status(200).json({
 			status: {
 				isError: false,
-				message: "Password has been successfully changed.",
+				message: "Password has been successfully changed",
 			},
 		});
 	} catch (error) {
 		if (error instanceof jwt.TokenExpiredError) {
-			return next(new ErrorResponse("Token has expired.", 400));
+			return next(new ErrorResponse("Token has expired", 400));
 		}
 		if (error instanceof jwt.JsonWebTokenError) {
-			return next(new ErrorResponse("Token is invalid.", 400));
+			return next(new ErrorResponse("Token is invalid", 400));
 		}
 		next(error);
 	}
@@ -463,10 +470,14 @@ exports.getCurrentUser = (req, res, next) => {
 		},
 		body: {
 			user: {
+				avatar: req.user.avatar.linkToAvatar,
+				birthday: req.user.birthday,
+				bio: req.user.bio,
 				givenName: req.user.givenName,
 				familyName: req.user.familyName,
 				email: req.user.email.address,
 				profileId: req.user.profileId,
+				lastTimeChanged: req.user.passwordData.lastTimeChanged,
 			},
 			changingEmailProcess: {
 				timeToNextEmail: req.user.email.nextEmailAvailableIn,
@@ -486,7 +497,7 @@ exports.logout = (req, res) => {
 		.json({
 			status: {
 				isError: false,
-				message: "Successfully logged out.",
+				message: "Successfully logged out",
 			},
 		});
 };
