@@ -22,7 +22,8 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.12.8",
     "multer": "^1.4.2",
-    "nanoid": "^3.1.23"
+    "nanoid": "^3.1.23",
+    "ws": "^7.4.6"
   },
   "devDependencies": {
     "colors": "^1.4.0",

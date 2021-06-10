@@ -77,6 +77,10 @@ const UserSchema = new mongoose.Schema({
 		type: Date,
 		default: new Date(),
 	},
+	posts: [{
+		type: mongoose.Schema.Types.ObjectId,
+		ref: "Post"
+	}]
 });
 
 UserSchema.pre("save", async function (next) {

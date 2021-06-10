@@ -184,7 +184,7 @@ exports.login = async (req, res, next) => {
 	const { email, password } = req.body;
 
 	try {
-		const user = await User.findOne({ "email.address": email });
+		const user = await User.findOne({ "email.address": email }).populate("posts", "isPublic timePosted text");
 		if (!user) {
 			return next(
 				new ErrorResponse("Email or password is incorrect", 400)
@@ -222,6 +222,10 @@ exports.login = async (req, res, next) => {
 		// console.log(city.city);
 		// console.log(city.postal);
 
+		// Save tokens in locals in order to establish socket connection
+		res.locals.accessToken = accessToken;
+		res.locals.refreshToken = refreshToken;
+
 		// Send Access token to the client
 		res.cookie("accessToken", accessToken, {
 			// secure: true,
@@ -248,6 +252,7 @@ exports.login = async (req, res, next) => {
 					email: user.email.address,
 					profileId: user.profileId,
 					lastTimeChanged: user.passwordData.lastTimeChanged,
+					posts: user.posts
 				},
 				changingEmailProcess: {
 					timeToNextEmail: user.email.nextEmailAvailableIn,
@@ -256,6 +261,9 @@ exports.login = async (req, res, next) => {
 				},
 			},
 		});
+
+		// Call next middleware (socket connection)
+		next();
 	} catch (error) {
 		return next(error);
 	}
@@ -462,30 +470,41 @@ exports.reset = async (req, res, next) => {
 
 // GET CURRENT USER
 
-exports.getCurrentUser = (req, res, next) => {
-	res.status(200).json({
-		status: {
-			isError: false,
-			message: "Done",
-		},
-		body: {
-			user: {
-				avatar: req.user.avatar.linkToAvatar,
-				birthday: req.user.birthday,
-				bio: req.user.bio,
-				givenName: req.user.givenName,
-				familyName: req.user.familyName,
-				email: req.user.email.address,
-				profileId: req.user.profileId,
-				lastTimeChanged: req.user.passwordData.lastTimeChanged,
+exports.getCurrentUser = async (req, res, next) => {
+	try {
+		const user = await User.findById(req.user._id).select("posts").populate("posts", "isPublic timePosted text");
+
+		res.status(200).json({
+			status: {
+				isError: false,
+				message: "Done",
 			},
-			changingEmailProcess: {
-				timeToNextEmail: req.user.email.nextEmailAvailableIn,
-				isChangingProcess: req.user.email.isChangingProcess,
-				newEmail: req.user.email.newEmail,
+			body: {
+				user: {
+					avatar: req.user.avatar.linkToAvatar,
+					birthday: req.user.birthday,
+					bio: req.user.bio,
+					givenName: req.user.givenName,
+					familyName: req.user.familyName,
+					email: req.user.email.address,
+					profileId: req.user.profileId,
+					lastTimeChanged: req.user.passwordData.lastTimeChanged,
+					posts: user.posts
+				},
+				changingEmailProcess: {
+					timeToNextEmail: req.user.email.nextEmailAvailableIn,
+					isChangingProcess: req.user.email.isChangingProcess,
+					newEmail: req.user.email.newEmail,
+				},
 			},
-		},
-	});
+		});
+
+		// Got to the next middleware (socket connection)
+		next();
+	} catch (error) {
+		next(error);
+	}
+
 };
 
 // LOGOUT

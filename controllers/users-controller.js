@@ -21,6 +21,7 @@ exports.getUser = async (req, res, next) => {
 
 	try {
 		if (req.user.profileId === id) {
+			const user = await User.findById(req.user._id).populate("posts", "isPublic timePosted text");;
 			return res.status(200).json({
 				status: {
 					isError: false,
@@ -34,6 +35,7 @@ exports.getUser = async (req, res, next) => {
 						givenName: req.user.givenName,
 						familyName: req.user.familyName,
 						registrationDate: req.user.registrationDate,
+						posts: user.posts
 					},
 					isCurrentUser: true,
 				},
@@ -42,7 +44,7 @@ exports.getUser = async (req, res, next) => {
 
 		const user = await User.findOne({ profileId: id }).select(
 			"avatar givenName familyName registrationDate bio birthday"
-		);
+		).populate("posts", "isPublic timePosted text");;
 
 		if (!user) {
 			return next(
@@ -63,6 +65,7 @@ exports.getUser = async (req, res, next) => {
 					givenName: user.givenName,
 					familyName: user.familyName,
 					registrationDate: user.registrationDate,
+					posts: user.posts
 				},
 				isCurrentUser: false,
 			},
