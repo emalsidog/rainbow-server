@@ -5,7 +5,7 @@ const validatePost = (method) => {
 	switch (method) {
 		case "addPost": {
 			return [
-				check("text")
+				check("postText")
 					.not()
 					.isEmpty()
 					.withMessage("Text of the post can not be empty")

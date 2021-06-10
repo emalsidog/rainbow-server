@@ -184,7 +184,10 @@ exports.login = async (req, res, next) => {
 	const { email, password } = req.body;
 
 	try {
-		const user = await User.findOne({ "email.address": email }).populate("posts", "isPublic timePosted text");
+		const user = await User.findOne({ "email.address": email }).populate(
+			"posts",
+			"isPublic timePosted postText _id"
+		);
 		if (!user) {
 			return next(
 				new ErrorResponse("Email or password is incorrect", 400)
@@ -197,6 +200,13 @@ exports.login = async (req, res, next) => {
 				new ErrorResponse("Email or password is incorrect", 400)
 			);
 		}
+		
+		const posts = user.posts.map((post) => ({
+			postText: post.postText,
+			isPublic: post.isPublic,
+			postId: post._id,
+			timePosted: post.timePosted,
+		}));
 
 		// Access token
 		const accessToken = createToken(
@@ -252,7 +262,7 @@ exports.login = async (req, res, next) => {
 					email: user.email.address,
 					profileId: user.profileId,
 					lastTimeChanged: user.passwordData.lastTimeChanged,
-					posts: user.posts
+					posts,
 				},
 				changingEmailProcess: {
 					timeToNextEmail: user.email.nextEmailAvailableIn,
@@ -472,7 +482,16 @@ exports.reset = async (req, res, next) => {
 
 exports.getCurrentUser = async (req, res, next) => {
 	try {
-		const user = await User.findById(req.user._id).select("posts").populate("posts", "isPublic timePosted text");
+		const user = await User.findById(req.user._id)
+			.select("posts")
+			.populate("posts", "isPublic timePosted postText");
+
+		const posts = user.posts.map((post) => ({
+			postText: post.postText,
+			isPublic: post.isPublic,
+			postId: post._id,
+			timePosted: post.timePosted,
+		}));
 
 		res.status(200).json({
 			status: {
@@ -489,7 +508,7 @@ exports.getCurrentUser = async (req, res, next) => {
 					email: req.user.email.address,
 					profileId: req.user.profileId,
 					lastTimeChanged: req.user.passwordData.lastTimeChanged,
-					posts: user.posts
+					posts,
 				},
 				changingEmailProcess: {
 					timeToNextEmail: req.user.email.nextEmailAvailableIn,
@@ -504,7 +523,6 @@ exports.getCurrentUser = async (req, res, next) => {
 	} catch (error) {
 		next(error);
 	}
-
 };
 
 // LOGOUT

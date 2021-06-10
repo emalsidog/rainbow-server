@@ -18,7 +18,7 @@ exports.addPost = async (req, res, next) => {
 		return next(new ErrorResponse(message, 422));
 	}
 
-	const { text, isPublic } = req.body;
+	const { postText, isPublic } = req.body;
 
 	if (typeof isPublic !== "boolean") {
 		return next(new ErrorResponse("Invalid request", 400));
@@ -32,7 +32,7 @@ exports.addPost = async (req, res, next) => {
         }
 
 		const newPost = new Post({
-			text,
+			postText,
 			isPublic,
 			author: req.user._id,
 		});
@@ -54,7 +54,12 @@ exports.addPost = async (req, res, next) => {
 				message: "Successfully added",
 			},
 			body: {
-				newPost,
+				post: {
+					postText: newPost.postText,
+					isPublic: newPost.isPublic,
+					postId: newPost._id,
+					timePosted: newPost.timePosted
+				}
 			},
 		});
 	} catch (error) {

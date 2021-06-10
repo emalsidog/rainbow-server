@@ -21,7 +21,15 @@ exports.getUser = async (req, res, next) => {
 
 	try {
 		if (req.user.profileId === id) {
-			const user = await User.findById(req.user._id).populate("posts", "isPublic timePosted text");;
+			const user = await User.findById(req.user._id).populate("posts", "isPublic timePosted postText");
+
+			const posts = user.posts.map((post) => ({
+				postText: post.postText,
+				isPublic: post.isPublic,
+				postId: post._id,
+				timePosted: post.timePosted,
+			}));
+
 			return res.status(200).json({
 				status: {
 					isError: false,
@@ -35,7 +43,7 @@ exports.getUser = async (req, res, next) => {
 						givenName: req.user.givenName,
 						familyName: req.user.familyName,
 						registrationDate: req.user.registrationDate,
-						posts: user.posts
+						posts
 					},
 					isCurrentUser: true,
 				},
@@ -44,13 +52,20 @@ exports.getUser = async (req, res, next) => {
 
 		const user = await User.findOne({ profileId: id }).select(
 			"avatar givenName familyName registrationDate bio birthday"
-		).populate("posts", "isPublic timePosted text");;
+		).populate("posts", "isPublic timePosted postText");;
 
 		if (!user) {
 			return next(
 				new ErrorResponse("Account with such ID does not exist", 400)
 			);
 		}
+
+		const posts = user.posts.map((post) => ({
+			postText: post.postText,
+			isPublic: post.isPublic,
+			postId: post._id,
+			timePosted: post.timePosted,
+		}));
 
 		res.status(200).json({
 			status: {
@@ -65,7 +80,7 @@ exports.getUser = async (req, res, next) => {
 					givenName: user.givenName,
 					familyName: user.familyName,
 					registrationDate: user.registrationDate,
-					posts: user.posts
+					posts
 				},
 				isCurrentUser: false,
 			},
