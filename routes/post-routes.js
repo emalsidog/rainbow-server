@@ -10,4 +10,8 @@ const validate = require("../input-validation/post-validation");
 
 router.post("/add-post", authenticate, validate("addPost"), Post.addPost);
 
+router.post("/delete-post", authenticate, Post.deletePost);
+
+router.post("/edit-post", authenticate, validate("editPost"), Post.editPost);
+
 module.exports = router;

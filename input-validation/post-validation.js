@@ -13,6 +13,16 @@ const validatePost = (method) => {
 					.withMessage("Max length is 500 symbols"),
 			];
 		}
+		case "editPost": {
+			return [
+				check("postText")
+					.not()
+					.isEmpty()
+					.withMessage("Text of the post can not be empty")
+					.isLength({ min: 1, max: 500 })
+					.withMessage("Max length is 500 symbols"),
+			];
+		}
 	}
 };
 
