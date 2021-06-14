@@ -41,6 +41,7 @@ exports.register = async (req, res, next) => {
 		const newUser = {
 			givenName,
 			familyName,
+			displayName: `${givenName} ${familyName}`,
 			email: { address: email },
 			passwordData: { password },
 		};
@@ -130,7 +131,7 @@ exports.activate = async (req, res, next) => {
 			);
 		}
 
-		const { givenName, familyName, email, passwordData } = user;
+		const { givenName, familyName, displayName, email, passwordData } = user;
 
 		// Check if user already exists
 		const existingUser = await User.findOne({
@@ -152,6 +153,7 @@ exports.activate = async (req, res, next) => {
 			profileId: nanoid(),
 			givenName,
 			familyName,
+			displayName,
 			email: {
 				address: email.address,
 			},
