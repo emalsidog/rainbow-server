@@ -44,9 +44,6 @@ app.use(cookieParser());
 // Routes
 require("./routes")(app);
 
-
-
-
 // Socket configuration
 let id;
 
@@ -80,6 +77,7 @@ app.use((req, res, next) => {
 
 wss.on("connection", function connection(ws) {
     console.log("A client connected");
+
     ws.id = id;
     wss.clients.forEach(client => {
         console.log({ id: client.id });

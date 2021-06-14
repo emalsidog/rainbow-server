@@ -21,7 +21,10 @@ exports.getUser = async (req, res, next) => {
 
 	try {
 		if (req.user.profileId === id) {
-			const user = await User.findById(req.user._id).populate("posts", "isPublic timePosted postText");
+			const user = await User.findById(req.user._id).populate(
+				"posts",
+				"isPublic timePosted postText"
+			);
 
 			const posts = user.posts.map((post) => ({
 				postText: post.postText,
@@ -43,16 +46,16 @@ exports.getUser = async (req, res, next) => {
 						givenName: req.user.givenName,
 						familyName: req.user.familyName,
 						registrationDate: req.user.registrationDate,
-						posts
+						posts,
 					},
 					isCurrentUser: true,
 				},
 			});
 		}
 
-		const user = await User.findOne({ profileId: id }).select(
-			"avatar givenName familyName registrationDate bio birthday"
-		).populate("posts", "isPublic timePosted postText");;
+		const user = await User.findOne({ profileId: id })
+			.select("avatar givenName familyName registrationDate bio birthday")
+			.populate("posts", "isPublic timePosted postText");
 
 		if (!user) {
 			return next(
@@ -80,10 +83,35 @@ exports.getUser = async (req, res, next) => {
 					givenName: user.givenName,
 					familyName: user.familyName,
 					registrationDate: user.registrationDate,
-					posts
+					posts,
 				},
 				isCurrentUser: false,
 			},
+		});
+	} catch (error) {
+		next(error);
+	}
+};
+
+// Search for user
+exports.searchUser = async (req, res, next) => {
+	const { searchText } = req.body;
+
+	const regExp = { $regex: new RegExp(searchText.toLowerCase(), "i") };
+
+	try {
+		const users = await User.find({ givenName: regExp }).select(
+			"avatar bio registrationDate profileId givenName familyName birthday"
+		);
+
+		res.status(200).json({ 
+			status: {
+				isError: false,
+				message: "Done"
+			},
+			body: {
+				users
+			}
 		});
 	} catch (error) {
 		next(error);

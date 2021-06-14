@@ -3,4 +3,5 @@ module.exports = (app) => {
 	app.use("/settings", require("./settings-routes"));
 	app.use("/users", require("./users-routes"));
 	app.use("/posts", require("./post-routes"));
+	app.use("/friends", require("./friends-route"));
 };

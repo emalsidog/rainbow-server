@@ -9,4 +9,6 @@ const authenticate = require("../middleware/authenticate");
 
 router.get("/:id", authenticate, Users.getUser);
 
+router.post("/search", authenticate, Users.searchUser);
+
 module.exports = router;

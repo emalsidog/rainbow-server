@@ -80,6 +80,14 @@ const UserSchema = new mongoose.Schema({
 	posts: [{
 		type: mongoose.Schema.Types.ObjectId,
 		ref: "Post"
+	}],
+	friendRequests: [{
+		type: mongoose.Schema.Types.ObjectId,
+		ref: "User"
+	}],
+	friends: [{
+		type: mongoose.Schema.Types.ObjectId,
+		ref: "User"
 	}]
 });
 
