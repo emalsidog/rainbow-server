@@ -100,35 +100,74 @@ exports.getUser = async (req, res, next) => {
 
 // Search for user
 exports.searchUser = async (req, res, next) => {
-	const { displayName } = req.body;
-	const regExp = { $regex: new RegExp(displayName.toLowerCase(), "i") };
+	const { options, requestOptions } = req.body;
 
+	const limit = 24;
+	const skip = limit * (requestOptions.page - 1);
+	const selectString = "avatar.linkToAvatar bio registrationDate profileId givenName familyName birthday";
+
+	let users = [];
 	try {
-		const DBusers = await User.find({ displayName: regExp }).select(
-			"avatar bio registrationDate profileId givenName familyName birthday"
-		);
+		const totalUsers = await User.countDocuments() - 1;
 
-		const users = DBusers.map(user => ({
-			_id: user._id,
-			avatar: user.avatar.linkToAvatar,
-			bio: user.bio,
-			registrationDate: user.registrationDate,
-			profileId: user.profileId,
-			givenName: user.givenName,
-			familyName: user.familyName,
-			birthday: user.birthday
-		}))
+		if (!options) {
+			users = await User
+				.find({ _id: { $ne: req.user._id } })
+				.select(selectString)
+				.skip(skip)
+				.limit(limit);
+			const transformedUsers = transformUsers(users);
 
-		res.status(200).json({ 
+			return res.status(200).json({
+				status: {
+					isError: false,
+					message: "",
+				},
+				body: {
+					users: transformedUsers,
+					totalUsers,
+				},
+			});
+		}
+
+		const { displayName } = options;
+
+		const filter = {
+			displayName: {
+				$regex: new RegExp(displayName.toLowerCase(), "i"),
+			},
+			_id: {
+				$ne: req.user._id,
+			},
+		};
+
+		users = await User
+			.find(filter)
+			.select(selectString)
+			.skip(skip)
+			.limit(limit);
+		const transformedUsers = transformUsers(users);
+
+		res.status(200).json({
 			status: {
 				isError: false,
-				message: "Done"
+				message: "",
 			},
 			body: {
-				users
-			}
+				users: transformedUsers,
+				totalUsers,
+
+				
+			},
 		});
 	} catch (error) {
 		next(error);
 	}
 };
+
+const transformUsers = (users) => {
+	return users.map((user) => ({
+		...user._doc,
+		avatar: user.avatar.linkToAvatar,
+	}));
+}
