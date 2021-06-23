@@ -42,23 +42,20 @@ exports.friendRequest = async (req, res, next) => {
 		userToAddToFriends.friendRequests.push(currentUser._id);
 		await userToAddToFriends.save();
 
-		// Notification payload
-		const payload = {
-			notification: {
-				type: "FRIEND_REQUEST",
-				data: {
-					profileId: currentUser.profileId,
-					displayName: currentUser.displayName
-				}
-			},
-			serverData: {
-				currentUserId: currentUser._id
-			}
-		}
-
 		const webSocketPayload = {
 			type: "FRIEND_REQUEST",
-			payload
+			payload: {
+				notification: {
+					type: "FRIEND_REQUEST",
+					data: {
+						profileId: currentUser.profileId,
+						displayName: currentUser.displayName
+					}
+				},
+				serverData: {
+					currentUserId: currentUser._id
+				}
+			}
 		}
 
 		req.wss.clients.forEach((client) => {
@@ -114,22 +111,20 @@ exports.acceptFriendRequest = async (req, res, next) => {
 		await currentUser.save();
 		await userToAccept.save();
 
-		const payload = {
-			notification: {
-				type: "FRIEND_REQUEST_ACCEPTED",
-				data: {
-					displayName: currentUser.displayName
-				}
-			},
-			serverData: {
-				idOfUserWhoAccepted: currentUser._id,
-				acceptedUserId: userToAccept._id
-			},
-		}
-
 		const webSocketPayload = {
 			type: "FRIEND_REQUEST_ACCEPTED",
-			payload
+			payload: {
+				notification: {
+					type: "FRIEND_REQUEST_ACCEPTED",
+					data: {
+						displayName: currentUser.displayName
+					}
+				},
+				serverData: {
+					idOfUserWhoAccepted: currentUser._id,
+					acceptedUserId: userToAccept._id
+				},
+			}
 		}
 		
 		req.wss.clients.forEach((client) => {
@@ -174,10 +169,29 @@ exports.declineFriendRequest = async (req, res, next) => {
 		user.friendRequests = user.friendRequests.filter(pendingId => id.toString() !== pendingId.toString());
 		await user.save();
 
+		const webSocketPayload = {
+			type: "FRIEND_REQUEST_DECLINED",
+			payload: {
+				serverData: {
+					declinedRequestId: id,
+					idOfUserWhoDeclined: user._id
+				},
+			}
+		}
+
+		req.wss.clients.forEach((client) => {
+			if (client.id.toString() === id.toString()) {
+				client.send(JSON.stringify(webSocketPayload));
+			}
+		});
+
 		res.status(200).json({
 			status: {
 				isError: false,
 				message: "Request declined"
+			},
+			body: {
+				declinedRequestId: id
 			}
 		})
 
@@ -208,10 +222,29 @@ exports.cancelFriendRequest = async (req, res, next) => {
 		user.friendRequests = user.friendRequests.filter(requestId => requestId.toString() !== req.user._id.toString());
 		await user.save();
 
+		const webSocketPayload = {
+			type: "FRIEND_REQUEST_CANCELLED",
+			payload: {
+				serverData: {
+					idOfUserWhoCancelled: req.user._id, 
+				},
+			}
+		}
+
+		req.wss.clients.forEach((client) => {
+			if (client.id.toString() === id.toString()) {
+				client.send(JSON.stringify(webSocketPayload));
+			}
+		});
+
 		res.status(200).json({
 			status: {
 				isError: false,
 				message: "Request cancelled"
+			},
+			body: {
+				idOfUserWhoCancelled: req.user._id, 
+				userWhoHasRequest: id
 			}
 		});
 	} catch (error) {
@@ -253,10 +286,30 @@ exports.removeFromFriends = async (req, res, next) => {
 		await currentUser.save();
 		await userToRemove.save();
 
+		const webSocketPayload = {
+			type: "FRIEND_REMOVED",
+			payload: {
+				serverData: {
+					idOfUserWhoHasFriend: userToRemove._id,
+					idOfUserToRemove: currentUser._id
+				},
+			}
+		}
+
+		req.wss.clients.forEach((client) => {
+			if (client.id.toString() === id.toString()) {
+				client.send(JSON.stringify(webSocketPayload));
+			}
+		});
+
 		res.status(200).json({
 			status: {
 				isError: false,
 				message: "Removed :("
+			},
+			body: {
+				idOfUserToRemove: userToRemove._id,
+				idOfUserWhoHasFriend: currentUser._id
 			}
 		});
 	} catch (error) {
