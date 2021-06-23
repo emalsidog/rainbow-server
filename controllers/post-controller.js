@@ -1,6 +1,5 @@
 // Dependencies
 const { validationResult } = require("express-validator");
-const ObjectId = require("mongoose").Types.ObjectId;
 
 // Models
 const User = require("../models/User");
@@ -8,6 +7,7 @@ const Post = require("../models/Post");
 
 // Utils
 const ErrorResponse = require("../utils/error-response");
+const checkMongooseId = require("../utils/check-id").checkMongooseId;
 
 // ADD POST
 
@@ -179,20 +179,4 @@ exports.editPost = async (req, res, next) => {
 	} catch (error) {
 		next(error);
 	}
-};
-
-const checkMongooseId = (id) => {
-	if (!id) {
-		return false;
-	}
-
-	if (typeof id !== "string") {
-		return false;
-	}
-
-	if (!ObjectId.isValid(id)) {
-		return false;
-	}
-
-	return true;
 };

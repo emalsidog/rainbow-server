@@ -22,10 +22,10 @@ exports.getUser = async (req, res, next) => {
 
 	try {
 		if (req.user.profileId === id) {
-			const user = await User.findById(req.user._id).populate(
-				"posts",
-				"isPublic timePosted postText"
-			);
+			const user = await User.findById(req.user._id)
+				.populate("posts", "isPublic timePosted postText")
+				.populate("friends", "avatar givenName profileId")
+				.populate("friendRequests", "avatar displayName bio profileId");
 
 			const posts = user.posts.map((post) => ({
 				postText: post.postText,
@@ -43,13 +43,18 @@ exports.getUser = async (req, res, next) => {
 					user: {
 						_id: req.user._id,
 						profileId: req.user.profileId,
+
 						avatar: req.user.avatar.linkToAvatar,
 						bio: req.user.bio,
-						birthday: req.user.birthday,
 						givenName: req.user.givenName,
 						familyName: req.user.familyName,
+						
+						birthday: req.user.birthday,
 						registrationDate: req.user.registrationDate,
+
 						posts,
+						friends: user.friends,
+						friendRequests: user.friendRequests
 					},
 					isCurrentUser: true,
 				},
@@ -57,8 +62,10 @@ exports.getUser = async (req, res, next) => {
 		}
 
 		const user = await User.findOne({ profileId: id })
-			.select("avatar givenName familyName registrationDate bio birthday")
-			.populate("posts", "isPublic timePosted postText");
+			.select("-passwordData -email -provider")
+			.populate("posts", "isPublic timePosted postText")
+			.populate("friends", "avatar givenName profileId")
+			.populate("friendRequests", "avatar displayName bio profileId");
 
 		if (!user) {
 			return next(
@@ -82,13 +89,18 @@ exports.getUser = async (req, res, next) => {
 				user: {
 					_id: user._id,
 					profileId: user.profileId,
+
 					avatar: user.avatar.linkToAvatar,
 					bio: user.bio,
-					birthday: user.birthday,
 					givenName: user.givenName,
 					familyName: user.familyName,
+
+					birthday: user.birthday,
 					registrationDate: user.registrationDate,
+
 					posts,
+					friends: user.friends,
+					friendRequests: user.friendRequests
 				},
 				isCurrentUser: false,
 			},
@@ -104,20 +116,18 @@ exports.searchUser = async (req, res, next) => {
 
 	const limit = 24;
 	const skip = limit * (requestOptions.page - 1);
-	const selectString = "avatar.linkToAvatar bio registrationDate profileId givenName familyName birthday";
+	const selectString = "-passwordData -email -provider";
 
 	let users = [];
-	try {
-		const totalUsers = await User.countDocuments() - 1;
-
+	try {	
 		if (!options) {
 			users = await User
 				.find({ _id: { $ne: req.user._id } })
 				.select(selectString)
 				.skip(skip)
 				.limit(limit);
-			const transformedUsers = transformUsers(users);
-
+			const [transformedUsers, hasMoreData] = transformUsers(users, limit);
+			
 			return res.status(200).json({
 				status: {
 					isError: false,
@@ -125,7 +135,10 @@ exports.searchUser = async (req, res, next) => {
 				},
 				body: {
 					users: transformedUsers,
-					totalUsers,
+					meta: {
+						hasMoreData,
+						hasMoreSearchedData: true
+					}
 				},
 			});
 		}
@@ -146,7 +159,7 @@ exports.searchUser = async (req, res, next) => {
 			.select(selectString)
 			.skip(skip)
 			.limit(limit);
-		const transformedUsers = transformUsers(users);
+		const [transformedUsers, hasMoreData] = transformUsers(users, limit);
 
 		res.status(200).json({
 			status: {
@@ -155,9 +168,10 @@ exports.searchUser = async (req, res, next) => {
 			},
 			body: {
 				users: transformedUsers,
-				totalUsers,
-
-				
+				meta: {
+					hasMoreSearchedData: hasMoreData,
+					hasMoreData: true
+				}
 			},
 		});
 	} catch (error) {
@@ -165,9 +179,19 @@ exports.searchUser = async (req, res, next) => {
 	}
 };
 
-const transformUsers = (users) => {
-	return users.map((user) => ({
-		...user._doc,
-		avatar: user.avatar.linkToAvatar,
-	}));
+const transformUsers = (users, limit) => {
+	let hasMoreData = true;
+	const tranformedUsers = users.map((user) => {
+
+		return {
+			...user._doc,
+			avatar: user.avatar.linkToAvatar,
+		}
+	});
+
+	if (tranformedUsers.length < limit) {
+		hasMoreData = false;
+	}
+	
+	return [tranformedUsers, hasMoreData];
 }

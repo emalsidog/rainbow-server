@@ -186,10 +186,11 @@ exports.login = async (req, res, next) => {
 	const { email, password } = req.body;
 
 	try {
-		const user = await User.findOne({ "email.address": email }).populate(
-			"posts",
-			"isPublic timePosted postText _id"
-		);
+		const user = await User
+			.findOne({ "email.address": email })
+			.populate("posts", "isPublic timePosted postText _id")
+			
+
 		if (!user) {
 			return next(
 				new ErrorResponse("Email or password is incorrect", 400)
@@ -249,6 +250,8 @@ exports.login = async (req, res, next) => {
 			// sameSite: "none",
 		});
 
+		const { avatar, email: emailData, passwordData } = user;
+
 		res.status(200).json({
 			status: {
 				isError: false,
@@ -256,20 +259,16 @@ exports.login = async (req, res, next) => {
 			},
 			body: {
 				user: {
-					avatar: user.avatar.linkToAvatar,
-					birthday: user.birthday,
-					bio: user.bio,
-					givenName: user.givenName,
-					familyName: user.familyName,
-					email: user.email.address,
-					profileId: user.profileId,
-					lastTimeChanged: user.passwordData.lastTimeChanged,
+					...user._doc,
+					avatar: avatar.linkToAvatar,	
+					email: emailData.address,
+					lastTimeChanged: passwordData.lastTimeChanged,
 					posts,
 				},
 				changingEmailProcess: {
-					timeToNextEmail: user.email.nextEmailAvailableIn,
-					isChangingProcess: user.email.isChangingProcess,
-					newEmail: user.email.newEmail,
+					timeToNextEmail: emailData.nextEmailAvailableIn,
+					isChangingProcess: emailData.isChangingProcess,
+					newEmail: emailData.newEmail,
 				},
 			},
 		});
@@ -484,8 +483,8 @@ exports.reset = async (req, res, next) => {
 
 exports.getCurrentUser = async (req, res, next) => {
 	try {
-		const user = await User.findById(req.user._id)
-			.select("posts")
+		const user = await User
+			.findById(req.user._id)
 			.populate("posts", "isPublic timePosted postText");
 
 		const posts = user.posts.map((post) => ({
@@ -495,6 +494,8 @@ exports.getCurrentUser = async (req, res, next) => {
 			timePosted: post.timePosted,
 		}));
 
+		const { avatar, email, passwordData } = user;
+
 		res.status(200).json({
 			status: {
 				isError: false,
@@ -502,20 +503,16 @@ exports.getCurrentUser = async (req, res, next) => {
 			},
 			body: {
 				user: {
-					avatar: req.user.avatar.linkToAvatar,
-					birthday: req.user.birthday,
-					bio: req.user.bio,
-					givenName: req.user.givenName,
-					familyName: req.user.familyName,
-					email: req.user.email.address,
-					profileId: req.user.profileId,
-					lastTimeChanged: req.user.passwordData.lastTimeChanged,
+					...user._doc,
+					avatar: avatar.linkToAvatar,	
+					email: email.address,
+					lastTimeChanged: passwordData.lastTimeChanged,
 					posts,
 				},
 				changingEmailProcess: {
-					timeToNextEmail: req.user.email.nextEmailAvailableIn,
-					isChangingProcess: req.user.email.isChangingProcess,
-					newEmail: req.user.email.newEmail,
+					timeToNextEmail: email.nextEmailAvailableIn,
+					isChangingProcess: email.isChangingProcess,
+					newEmail: email.newEmail,
 				},
 			},
 		});
