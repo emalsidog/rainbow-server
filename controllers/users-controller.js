@@ -1,3 +1,6 @@
+// Dependenices
+const { redis, getAsync } = require("../config/redis-connect");
+
 // Models
 const User = require("../models/User");
 
@@ -21,45 +24,21 @@ exports.getUser = async (req, res, next) => {
 	}
 
 	try {
-		if (req.user.profileId === id) {
-			const user = await User.findById(req.user._id)
-				.populate("posts", "isPublic timePosted postText")
-				.populate("friends", "avatar givenName profileId")
-				.populate("friendRequests", "avatar displayName bio profileId");
 
-			const posts = user.posts.map((post) => ({
-				postText: post.postText,
-				isPublic: post.isPublic,
-				postId: post._id,
-				timePosted: post.timePosted,
-			}));
+		// const cachedUser = await getAsync(id);
 
-			return res.status(200).json({
-				status: {
-					isError: false,
-					message: "Done",
-				},
-				body: {
-					user: {
-						_id: req.user._id,
-						profileId: req.user.profileId,
-
-						avatar: req.user.avatar.linkToAvatar,
-						bio: req.user.bio,
-						givenName: req.user.givenName,
-						familyName: req.user.familyName,
-						
-						birthday: req.user.birthday,
-						registrationDate: req.user.registrationDate,
-
-						posts,
-						friends: user.friends,
-						friendRequests: user.friendRequests
-					},
-					isCurrentUser: true,
-				},
-			});
-		}
+		// if (cachedUser) {
+		// 	return res.status(200).json({
+		// 		status: {
+		// 			isError: false,
+		// 			message: "Done",
+		// 		},
+		// 		body: {
+		// 			user: makeUser(JSON.parse(cachedUser)),
+		// 			isCurrentUser: id === req.user.profileId,
+		// 		},
+		// 	})
+		// }
 
 		const user = await User.findOne({ profileId: id })
 			.select("-passwordData -email -provider")
@@ -73,38 +52,23 @@ exports.getUser = async (req, res, next) => {
 			);
 		}
 
-		const posts = user.posts.map((post) => ({
-			postText: post.postText,
-			isPublic: post.isPublic,
-			postId: post._id,
-			timePosted: post.timePosted,
-		}));
+		// redis.set(id, JSON.stringify(user), (error) => {
+		// 	if (error) {
+		// 		console.log(error);
+		// 	}
+		// });
 
-		res.status(200).json({
+		return res.status(200).json({
 			status: {
 				isError: false,
 				message: "Done",
 			},
 			body: {
-				user: {
-					_id: user._id,
-					profileId: user.profileId,
-
-					avatar: user.avatar.linkToAvatar,
-					bio: user.bio,
-					givenName: user.givenName,
-					familyName: user.familyName,
-
-					birthday: user.birthday,
-					registrationDate: user.registrationDate,
-
-					posts,
-					friends: user.friends,
-					friendRequests: user.friendRequests
-				},
-				isCurrentUser: false,
+				user: makeUser(user),
+				isCurrentUser: id === req.user.profileId,
 			},
 		});
+		
 	} catch (error) {
 		next(error);
 	}
@@ -182,7 +146,6 @@ exports.searchUser = async (req, res, next) => {
 const transformUsers = (users, limit) => {
 	let hasMoreData = true;
 	const tranformedUsers = users.map((user) => {
-
 		return {
 			...user._doc,
 			avatar: user.avatar.linkToAvatar,
@@ -194,4 +157,30 @@ const transformUsers = (users, limit) => {
 	}
 	
 	return [tranformedUsers, hasMoreData];
+}
+
+const makeUser = (user) => {
+	const posts = user.posts.map((post) => ({
+		postText: post.postText,
+		isPublic: post.isPublic,
+		postId: post._id,
+		timePosted: post.timePosted,
+	}));
+
+	return {
+		_id: user._id,
+		profileId: user.profileId,
+
+		avatar: user.avatar.linkToAvatar,
+		bio: user.bio,
+		givenName: user.givenName,
+		familyName: user.familyName,
+		
+		birthday: user.birthday,
+		registrationDate: user.registrationDate,
+
+		posts,
+		friends: user.friends,
+		friendRequests: user.friendRequests
+	}
 }

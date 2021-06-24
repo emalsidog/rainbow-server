@@ -7,6 +7,8 @@ const cors = require("cors");
 const WebSocket = require("ws");
 const http = require("http");
 const jwt = require("jsonwebtoken");
+
+// Utils
 const ErrorResponse = require("./utils/error-response");
 
 // Configuring server
@@ -15,7 +17,7 @@ const server = http.createServer(app);
 
 const wss = new WebSocket.Server({ server });
 
-// Connect db
+// Connect MongoDB
 require("./config/db-connect")();
 
 // Sockets
