@@ -200,6 +200,7 @@ exports.friendRequest = async (req, res, next) => {
 				},
 				serverData: {
 					currentUserId: currentUser._id,
+					requestsCount: userToAddToFriends.friendRequests.length
 				},
 			},
 		};
@@ -286,6 +287,7 @@ exports.acceptFriendRequest = async (req, res, next) => {
 			},
 			body: {
 				newFriendId: userToAccept._id,
+				requestsCount: currentUser.friendRequests.length
 			},
 		});
 	} catch (error) {
@@ -345,6 +347,7 @@ exports.declineFriendRequest = async (req, res, next) => {
 			},
 			body: {
 				declinedRequestId: id,
+				requestsCount: user.friendRequests.length
 			},
 		});
 	} catch (error) {
@@ -386,6 +389,7 @@ exports.cancelFriendRequest = async (req, res, next) => {
 			payload: {
 				serverData: {
 					idOfUserWhoCancelled: req.user._id,
+					requestsCount: user.friendRequests.length
 				},
 			},
 		};
