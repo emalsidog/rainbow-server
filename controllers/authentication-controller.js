@@ -52,7 +52,7 @@ exports.register = async (req, res, next) => {
 			process.env.ACTIVATION_TOKEN_EXPIRE
 		);
 
-		const url = `http://localhost:3000/users/activate/${activationToken}`;
+		const url = `https://rainbow-server-api.herokuapp.com/users/activate/${activationToken}`;
 		const emailOptions = {
 			to: email,
 			subject: "Verify your identity | Rainbow",
@@ -226,14 +226,14 @@ exports.login = async (req, res, next) => {
 		);
 
 		// Getting IP from where was request
-		// const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+		const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
 		// Looking for country with the help of web client of MAX MIND
-		// const city = await client.city("185.118.40.1");
-		// console.log(city.continent);
-		// console.log(city.country);
-		// console.log(city.city);
-		// console.log(city.postal);
+		const city = await client.city(req.headers['x-real-ip'] || req.connection.remoteAddress);
+		console.log(city.continent);
+		console.log(city.country);
+		console.log(city.city);
+		console.log(city.postal);
 
 		// Save tokens in locals in order to establish socket connection
 		res.locals.accessToken = accessToken;
@@ -241,13 +241,13 @@ exports.login = async (req, res, next) => {
 
 		// Send Access token to the client
 		res.cookie("accessToken", accessToken, {
-			// secure: true,
+			secure: true,
 			httpOnly: true,
-			// sameSite: "none",
+			sameSite: "none",
 		}).cookie("refreshToken", refreshToken, {
-			// secure: true,
+			secure: true,
 			httpOnly: true,
-			// sameSite: "none",
+			sameSite: "none",
 		});
 
 		const { avatar, email: emailData, passwordData } = user;
@@ -308,13 +308,13 @@ exports.refresh = async (req, res, next) => {
 		);
 
 		res.cookie("accessToken", newAccessToken, {
-			// secure: true,
+			secure: true,
 			httpOnly: true,
-			// sameSite: "none",
+			sameSite: "none",
 		}).cookie("refreshToken", newRefreshToken, {
-			// secure: true,
+			secure: true,
 			httpOnly: true,
-			// sameSite: "none",
+			sameSite: "none",
 		});
 
 		res.status(200).json({
@@ -370,7 +370,7 @@ exports.forgot = async (req, res, next) => {
 			process.env.RESET_TOKEN_EXPIRE
 		);
 
-		const url = `http://localhost:3000/users/reset/${resetToken}`;
+		const url = `https://rainbow-server-api.herokuapp.com/users/reset/${resetToken}`;
 		const emailOptions = {
 			to: email,
 			subject: "Reset password request | Rainbow",
