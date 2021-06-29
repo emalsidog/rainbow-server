@@ -229,7 +229,7 @@ exports.login = async (req, res, next) => {
 		const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
 		// Looking for country with the help of web client of MAX MIND
-		const city = await client.city(req.headers['x-real-ip'] || req.connection.remoteAddress);
+		const city = await client.city(ip);
 		console.log(city.continent);
 		console.log(city.country);
 		console.log(city.city);
