@@ -54,7 +54,7 @@ exports.addPost = async (req, res, next) => {
 		await user.save();
 		await newPost.save();
 
-		redis.del(user.profileId); // ?
+		// redis.del(user.profileId);
 
 		req.wss.clients.forEach((client) => {
 			if (client.id.toString() !== req.user._id.toString()) {
