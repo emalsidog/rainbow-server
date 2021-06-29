@@ -270,6 +270,7 @@ exports.login = async (req, res, next) => {
 					isChangingProcess: emailData.isChangingProcess,
 					newEmail: emailData.newEmail,
 				},
+				requestsCounter: user.friendRequests.length
 			},
 		});
 
@@ -514,6 +515,7 @@ exports.getCurrentUser = async (req, res, next) => {
 					isChangingProcess: email.isChangingProcess,
 					newEmail: email.newEmail,
 				},
+				requestsCounter: user.friendRequests.length
 			},
 		});
 

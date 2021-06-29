@@ -100,8 +100,8 @@ exports.changeEmailRequest = async (req, res, next) => {
 
 	try {
 		const emailExists = await User.findOne({ "email.address": email });
-
-		if (emailExists.email.address === req.user.email.address) {
+		
+		if (emailExists?.email.address === req.user.email.address) {
 			return next(new ErrorResponse("This email is already linked to this account", 400));
 		}
 

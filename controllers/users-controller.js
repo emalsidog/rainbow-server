@@ -77,8 +77,6 @@ exports.getUser = async (req, res, next) => {
 // Search for user
 exports.searchUser = async (req, res, next) => {
 	const { options, requestOptions } = req.body;
-	console.log(req.body)
-
 	const limit = 24;
 	const skip = limit * (requestOptions.page - 1);
 	const selectString = "-passwordData -email -provider";
