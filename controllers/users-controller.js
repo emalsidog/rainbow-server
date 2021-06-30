@@ -49,8 +49,6 @@ exports.getUser = async (req, res, next) => {
 					sort: { "timePosted": -1 }
 				}
 			})
-			.populate("friends", "avatar givenName profileId")
-			.populate("friendRequests", "avatar displayName bio profileId");
 
 		if (!user) {
 			return next(
