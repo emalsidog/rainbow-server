@@ -19,7 +19,7 @@ const client = new WebServiceClient("559966", "XFgENwGMXSK6XRBD", {
 // Client url
 const clientUrl = process.env.NODE_ENV === "development" 
 	? "http://localhost:3000" 
-	: "https://rainbow-server-api.herokuapp.com";
+	: "https://rainbow-client.herokuapp.com";
 
 // REGISTER
 
