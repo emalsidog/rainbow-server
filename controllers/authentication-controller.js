@@ -576,7 +576,7 @@ exports.logout = (req, res) => {
 		path: "/",
 	});
 
-	res.status(200).json({
+	res.json({
 		status: {
 			isError: false,
 			message: "Successfully logged out",
