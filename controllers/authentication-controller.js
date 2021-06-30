@@ -575,6 +575,7 @@ exports.getCurrentUser = async (req, res, next) => {
 
 exports.logout = (req, res) => {
 	try {
+		res.cookies.set('accessToken', {expires: Date.now()});
 		res.clearCookie("accessToken", { path: "/" })
 			.clearCookie("refreshToken", { path: "/" })
 			.status(200)
