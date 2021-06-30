@@ -16,6 +16,11 @@ const client = new WebServiceClient("559966", "XFgENwGMXSK6XRBD", {
 	host: "geolite.info",
 });
 
+// Client url
+const clientUrl = process.env.NODE_ENV === "development" 
+	? "http://localhost:3000" 
+	: "https://rainbow-server-api.herokuapp.com";
+
 // REGISTER
 
 exports.register = async (req, res, next) => {
@@ -52,7 +57,7 @@ exports.register = async (req, res, next) => {
 			process.env.ACTIVATION_TOKEN_EXPIRE
 		);
 
-		const url = `https://rainbow-server-api.herokuapp.com/users/activate/${activationToken}`;
+		const url = `${clientUrl}/users/activate/${activationToken}`;
 		const emailOptions = {
 			to: email,
 			subject: "Verify your identity | Rainbow",
@@ -225,15 +230,42 @@ exports.login = async (req, res, next) => {
 			process.env.REFRESH_TOKEN_EXPIRE
 		);
 
-		// Getting IP from where was request
-		const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+		if (process.env.NODE_ENV === "production") {
+			// Getting IP from where was request
+			const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+			
+			// Looking for country with the help of web client of MAX MIND
+			const city = await client.city("188.163.12.98");
 
-		// Looking for country with the help of web client of MAX MIND
-		const city = await client.city(ip);
-		console.log(city.continent);
-		console.log(city.country);
-		console.log(city.city);
-		console.log(city.postal);
+			const newDate = new Date();
+
+			const date = newDate.getUTCDate();
+			const month = newDate.getUTCMonth();
+			const year = newDate.getUTCFullYear();
+
+			const hours = newDate.getUTCHours();
+			const minutes = newDate.getUTCMinutes();
+			const seconds = newDate.getUTCSeconds();
+
+			const formattedDate = `${date}/${month}/${year}`;
+			const formattedTime = `${hours}:${minutes}:${seconds} UTC`
+
+			emailOptions = {
+				to: email,
+				subject: "A new login to your account | Rainbow",
+				html: `
+					<div>
+						<b>New login.</b> Dear ${user.givenName}, we detected a login into your account
+						on ${formattedDate} at ${formattedTime}.
+					</div>
+					<div>
+						Location: ${city.city.names.en}, ${city.country.names.en} (IP = ${ip})
+					</div>
+				`
+			}
+
+			sendMail(emailOptions);
+		}
 
 		// Save tokens in locals in order to establish socket connection
 		res.locals.accessToken = accessToken;
@@ -370,7 +402,7 @@ exports.forgot = async (req, res, next) => {
 			process.env.RESET_TOKEN_EXPIRE
 		);
 
-		const url = `https://rainbow-server-api.herokuapp.com/users/reset/${resetToken}`;
+		const url = `${clientUrl}/users/reset/${resetToken}`;
 		const emailOptions = {
 			to: email,
 			subject: "Reset password request | Rainbow",

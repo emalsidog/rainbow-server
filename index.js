@@ -30,7 +30,9 @@ app.use((req, res, next) => {
 app.use(
 	cors({
 		credentials: true,
-		origin: "https://rainbow-client.herokuapp.com",
+		origin: process.env.NODE_ENV === "development" 
+            ? "http://localhost:3000" 
+            : "https://rainbow-client.herokuapp.com",
 	})
 );
 
@@ -93,8 +95,6 @@ wss.on("connection", function connection(ws) {
 app.use(require("./middleware/error-handler"));
 
 // Startup
-const PORT = process.env.PORT || 4000;
-
-server.listen(PORT, () => {
-    console.log(`Server is listening on ${PORT}`);
+server.listen(process.env.PORT, () => {
+    console.log(`Server is listening on ${process.env.PORT} in ${process.env.NODE_ENV} mode`);
 });
