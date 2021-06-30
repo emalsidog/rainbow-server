@@ -572,8 +572,9 @@ exports.getCurrentUser = async (req, res, next) => {
 // LOGOUT
 
 exports.logout = (req, res) => {
-	res.clearCookie("accessToken", { path: "/" }).clearCookie("refreshToken", {
+	res.clearCookie("accessToken", { path: "/", sameSite: "none" }).clearCookie("refreshToken", {
 		path: "/",
+		sameSite: "none"
 	});
 
 	res.json({
