@@ -17,9 +17,10 @@ const client = new WebServiceClient("559966", "XFgENwGMXSK6XRBD", {
 });
 
 // Client url
-const clientUrl = process.env.NODE_ENV === "development" 
-	? "http://localhost:3000" 
-	: "https://rainbow-client.herokuapp.com";
+const clientUrl =
+	process.env.NODE_ENV === "development"
+		? "http://localhost:3000"
+		: "https://rainbow-client.herokuapp.com";
 
 // REGISTER
 
@@ -136,7 +137,8 @@ exports.activate = async (req, res, next) => {
 			);
 		}
 
-		const { givenName, familyName, displayName, email, passwordData } = user;
+		const { givenName, familyName, displayName, email, passwordData } =
+			user;
 
 		// Check if user already exists
 		const existingUser = await User.findOne({
@@ -191,16 +193,13 @@ exports.login = async (req, res, next) => {
 	const { email, password } = req.body;
 
 	try {
-		const user = await User
-			.findOne({ "email.address": email })
-			.populate({
-				path: "posts",
-				select: "isPublic timePosted postText _id",
-				options: {
-					sort: { "timePosted": -1 }
-				}
-			})
-			
+		const user = await User.findOne({ "email.address": email }).populate({
+			path: "posts",
+			select: "isPublic timePosted postText _id",
+			options: {
+				sort: { timePosted: -1 },
+			},
+		});
 
 		if (!user) {
 			return next(
@@ -214,7 +213,7 @@ exports.login = async (req, res, next) => {
 				new ErrorResponse("Email or password is incorrect", 400)
 			);
 		}
-		
+
 		const posts = user.posts.map((post) => ({
 			postText: post.postText,
 			isPublic: post.isPublic,
@@ -238,8 +237,9 @@ exports.login = async (req, res, next) => {
 
 		if (process.env.NODE_ENV === "production") {
 			// Getting IP from where was request
-			const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-			
+			const ip =
+				req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+
 			// Looking for country with the help of web client of MAX MIND
 			const city = await client.city(ip);
 
@@ -254,7 +254,7 @@ exports.login = async (req, res, next) => {
 			const seconds = newDate.getUTCSeconds();
 
 			const formattedDate = `${date}/${month}/${year}`;
-			const formattedTime = `${hours}:${minutes}:${seconds} UTC`
+			const formattedTime = `${hours}:${minutes}:${seconds} UTC`;
 
 			emailOptions = {
 				to: email,
@@ -267,8 +267,8 @@ exports.login = async (req, res, next) => {
 					<div>
 						Location: ${city.city.names.en}, ${city.country.names.en} (IP = ${ip})
 					</div>
-				`
-			}
+				`,
+			};
 
 			sendMail(emailOptions);
 		}
@@ -298,7 +298,7 @@ exports.login = async (req, res, next) => {
 			body: {
 				user: {
 					...user._doc,
-					avatar: avatar.linkToAvatar,	
+					avatar: avatar.linkToAvatar,
 					email: emailData.address,
 					lastTimeChanged: passwordData.lastTimeChanged,
 					posts,
@@ -308,14 +308,14 @@ exports.login = async (req, res, next) => {
 					isChangingProcess: emailData.isChangingProcess,
 					newEmail: emailData.newEmail,
 				},
-				requestsCounter: user.friendRequests.length
+				requestsCounter: user.friendRequests.length,
 			},
 		});
 
 		// Call next middleware (socket connection)
 		next();
 	} catch (error) {
-		console.log(error)
+		console.log(error);
 		return next(error);
 	}
 };
@@ -523,15 +523,13 @@ exports.reset = async (req, res, next) => {
 
 exports.getCurrentUser = async (req, res, next) => {
 	try {
-		const user = await User
-			.findById(req.user._id)
-			.populate({
-				path: "posts",
-				select: "isPublic timePosted postText",
-				options: {
-					sort: { "timePosted": -1 }
-				}
-			})
+		const user = await User.findById(req.user._id).populate({
+			path: "posts",
+			select: "isPublic timePosted postText",
+			options: {
+				sort: { timePosted: -1 },
+			},
+		});
 
 		const posts = user.posts.map((post) => ({
 			postText: post.postText,
@@ -550,7 +548,7 @@ exports.getCurrentUser = async (req, res, next) => {
 			body: {
 				user: {
 					...user._doc,
-					avatar: avatar.linkToAvatar,	
+					avatar: avatar.linkToAvatar,
 					email: email.address,
 					lastTimeChanged: passwordData.lastTimeChanged,
 					posts,
@@ -560,7 +558,7 @@ exports.getCurrentUser = async (req, res, next) => {
 					isChangingProcess: email.isChangingProcess,
 					newEmail: email.newEmail,
 				},
-				requestsCounter: user.friendRequests.length
+				requestsCounter: user.friendRequests.length,
 			},
 		});
 
@@ -575,16 +573,25 @@ exports.getCurrentUser = async (req, res, next) => {
 
 exports.logout = (req, res) => {
 	try {
-		res.cookies.set('accessToken', {expires: Date.now()});
-		res.clearCookie("accessToken", { path: "/" })
-			.clearCookie("refreshToken", { path: "/" })
-			.status(200)
-			.json({
-				status: {
-					isError: false,
-					message: "Successfully logged out",
-				},
-			});
+		res
+			.cookie("accessToken", "", { expires: new Date(1), path: "/" })
+			.cookie("refreshToken", "", { expiresIn: new Date(1), path: "/" })
+
+		res.status(200).json({
+			status: {
+				isError: false,
+				message: "Successfully logged out"
+			}
+		})
+		// res.clearCookie("accessToken", { path: "/" })
+		// 	.clearCookie("refreshToken", { path: "/" })
+		// 	.status(200)
+		// 	.json({
+		// 		status: {
+		// 			isError: false,
+		// 			message: "Successfully logged out",
+		// 		},
+		// 	});
 	} catch (error) {
 		console.log(error);
 	}
