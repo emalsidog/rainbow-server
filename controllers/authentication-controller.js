@@ -572,20 +572,16 @@ exports.getCurrentUser = async (req, res, next) => {
 // LOGOUT
 
 exports.logout = (req, res) => {
-	try {
-		res.cookie("accessToken", "", {
-			secure: true,
-			httpOnly: true,
-			sameSite: "none",
-		}).cookie("refreshToken", "", {
-			secure: true,
-			httpOnly: true,
-			sameSite: "none",
-		});
-		
-	} catch (error) {
-		console.log(error);
-	}
+	res.clearCookie("accessToken", { path: "/" }).clearCookie("refreshToken", {
+		path: "/",
+	});
+
+	res.status(200).json({
+		status: {
+			isError: false,
+			message: "Successfully logged out",
+		},
+	});
 };
 
 const createToken = (payload, secretKey, expireTime) => {
