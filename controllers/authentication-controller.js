@@ -241,7 +241,7 @@ exports.login = async (req, res, next) => {
 			const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 			
 			// Looking for country with the help of web client of MAX MIND
-			const city = await client.city("188.163.12.98");
+			const city = await client.city(ip);
 
 			const newDate = new Date();
 
@@ -315,6 +315,7 @@ exports.login = async (req, res, next) => {
 		// Call next middleware (socket connection)
 		next();
 	} catch (error) {
+		console.log(error)
 		return next(error);
 	}
 };
