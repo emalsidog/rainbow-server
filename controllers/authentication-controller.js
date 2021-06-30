@@ -573,15 +573,19 @@ exports.getCurrentUser = async (req, res, next) => {
 // LOGOUT
 
 exports.logout = (req, res) => {
-	res.clearCookie("accessToken")
-		.clearCookie("refreshToken")
-		.status(200)
-		.json({
-			status: {
-				isError: false,
-				message: "Successfully logged out",
-			},
-		});
+	try {
+		res.clearCookie("accessToken", { path: "/" })
+			.clearCookie("refreshToken", { path: "/" })
+			.status(200)
+			.json({
+				status: {
+					isError: false,
+					message: "Successfully logged out",
+				},
+			});
+	} catch (error) {
+		console.log(error);
+	}
 };
 
 const createToken = (payload, secretKey, expireTime) => {
