@@ -322,12 +322,13 @@ exports.changeAvatar = async (req, res, next) => {
 		const oldImageName = user.avatar.fileName;
 
 		user.avatar.linkToAvatar = `${protocol}${req.headers.host}/avatars/${req.file.filename}`;
+		
 		user.avatar.fileName = req.file.filename;
 		await user.save();
 
 		if (oldImageName !== "default.png") {
 			fs.unlink(`public/avatars/${oldImageName}`, (error) => {
-				if (error) throw error;
+				if (error) console.log(error);
 			});
 		}
 

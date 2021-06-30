@@ -42,7 +42,13 @@ exports.getUser = async (req, res, next) => {
 
 		const user = await User.findOne({ profileId: id })
 			.select("-passwordData -email -provider")
-			.populate("posts", "isPublic timePosted postText")
+			.populate({
+				path: "posts",
+				select: "isPublic timePosted postText",
+				options: {
+					sort: { "timePosted": -1 }
+				}
+			})
 			.populate("friends", "avatar givenName profileId")
 			.populate("friendRequests", "avatar displayName bio profileId");
 

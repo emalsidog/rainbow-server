@@ -193,7 +193,13 @@ exports.login = async (req, res, next) => {
 	try {
 		const user = await User
 			.findOne({ "email.address": email })
-			.populate("posts", "isPublic timePosted postText _id")
+			.populate({
+				path: "posts",
+				select: "isPublic timePosted postText _id",
+				options: {
+					sort: { "timePosted": -1 }
+				}
+			})
 			
 
 		if (!user) {
@@ -518,7 +524,13 @@ exports.getCurrentUser = async (req, res, next) => {
 	try {
 		const user = await User
 			.findById(req.user._id)
-			.populate("posts", "isPublic timePosted postText");
+			.populate({
+				path: "posts",
+				select: "isPublic timePosted postText",
+				options: {
+					sort: { "timePosted": -1 }
+				}
+			})
 
 		const posts = user.posts.map((post) => ({
 			postText: post.postText,

@@ -35,6 +35,7 @@ exports.addPost = async (req, res, next) => {
 			postText,
 			isPublic,
 			author: req.user._id,
+			timePosted: new Date()
 		});
 
 		const post = {
