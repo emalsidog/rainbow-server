@@ -573,25 +573,16 @@ exports.getCurrentUser = async (req, res, next) => {
 
 exports.logout = (req, res) => {
 	try {
-		res
-			.cookie("accessToken", "", { expires: new Date(1), path: "/" })
-			.cookie("refreshToken", "", { expiresIn: new Date(1), path: "/" })
-
-		res.status(200).json({
-			status: {
-				isError: false,
-				message: "Successfully logged out"
-			}
-		})
-		// res.clearCookie("accessToken", { path: "/" })
-		// 	.clearCookie("refreshToken", { path: "/" })
-		// 	.status(200)
-		// 	.json({
-		// 		status: {
-		// 			isError: false,
-		// 			message: "Successfully logged out",
-		// 		},
-		// 	});
+		res.cookie("accessToken", "", {
+			secure: true,
+			httpOnly: true,
+			sameSite: "none",
+		}).cookie("refreshToken", "", {
+			secure: true,
+			httpOnly: true,
+			sameSite: "none",
+		});
+		
 	} catch (error) {
 		console.log(error);
 	}
