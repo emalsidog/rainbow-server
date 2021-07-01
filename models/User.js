@@ -39,6 +39,11 @@ const UserSchema = new mongoose.Schema({
 		type: String,
 		required: true
 	},
+	role: {
+		type: String,
+		enum: ["DEVELOPER", "MEMBER", "VERIFIED"],
+		default: "MEMBER"
+	},
 	email: {
 		address: {
 			type: String,

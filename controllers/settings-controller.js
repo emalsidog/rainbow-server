@@ -22,12 +22,16 @@ exports.changeDisplayName = async (req, res, next) => {
 
 	const { givenName, familyName } = req.body;
 
+	const transformedGivenName = transformName(givenName);
+	const transformedFamilyName = transformName(familyName)
+
 	try {
 		const user = await User.findByIdAndUpdate(
 			req.user._id,
 			{
-				givenName: transformName(givenName),
-				familyName: transformName(familyName),
+				givenName: transformedGivenName,
+				familyName: transformedFamilyName,
+				displayName: `${transformedGivenName} ${transformedFamilyName}`
 			},
 			{ new: true }
 		).select("givenName familyName");

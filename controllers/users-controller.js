@@ -180,6 +180,7 @@ const makeUser = (user) => {
 		bio: user.bio,
 		givenName: user.givenName,
 		familyName: user.familyName,
+		role: user.role,
 		
 		birthday: user.birthday,
 		registrationDate: user.registrationDate,

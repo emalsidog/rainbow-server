@@ -45,10 +45,13 @@ exports.register = async (req, res, next) => {
 			return next(new ErrorResponse("Email is already registered", 400));
 		}
 
+		const transformedGivenName = transformName(givenName)
+		const transformedFamilyName = transformName(familyName)
+
 		const newUser = {
-			givenName: transformName(givenName),
-			familyName: transformName(familyName),
-			displayName: `${givenName} ${familyName}`,
+			givenName: transformedGivenName,
+			familyName: transformedFamilyName,
+			displayName: `${transformedGivenName} ${transformedFamilyName}`,
 			email: { address: email },
 			passwordData: { password },
 		};
