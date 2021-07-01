@@ -11,7 +11,9 @@ const UserSchema = new mongoose.Schema({
 	avatar: {
 		linkToAvatar: {
 			type: String,
-			default: "http://localhost:4000/avatars/default.png",
+			default: process.env.NODE_ENV === "development" 
+				? "http://localhost:4000/avatars/default.png" 
+				: "https://rainbow-client.herokuapp.com/avatars/default.png",
 		},
 		fileName: {
 			type: String,
