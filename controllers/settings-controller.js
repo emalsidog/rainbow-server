@@ -9,6 +9,7 @@ const User = require("../models/User");
 // Utils
 const ErrorResponse = require("../utils/error-response");
 const sendMail = require("../utils/send-mail");
+const transformName = require("../utils/transform-name");
 
 // CHANGE DISPLAY NAME
 
@@ -25,8 +26,8 @@ exports.changeDisplayName = async (req, res, next) => {
 		const user = await User.findByIdAndUpdate(
 			req.user._id,
 			{
-				givenName,
-				familyName,
+				givenName: transformName(givenName),
+				familyName: transformName(familyName),
 			},
 			{ new: true }
 		).select("givenName familyName");
@@ -256,7 +257,7 @@ exports.deleteAccount = async (req, res, next) => {
 			.json({
 				status: {
 					isError: false,
-					message: "Your account was successfully deleted. Good bye!",
+					message: "Your account has been successfully deleted. Good bye!",
 				},
 			});
 	} catch (error) {

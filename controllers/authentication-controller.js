@@ -10,6 +10,7 @@ const User = require("../models/User");
 // Utils
 const sendMail = require("../utils/send-mail");
 const ErrorResponse = require("../utils/error-response");
+const transformName = require("../utils/transform-name");
 
 // IP CLIENT
 const client = new WebServiceClient("559966", "XFgENwGMXSK6XRBD", {
@@ -45,8 +46,8 @@ exports.register = async (req, res, next) => {
 		}
 
 		const newUser = {
-			givenName,
-			familyName,
+			givenName: transformName(givenName),
+			familyName: transformName(familyName),
 			displayName: `${givenName} ${familyName}`,
 			email: { address: email },
 			passwordData: { password },
