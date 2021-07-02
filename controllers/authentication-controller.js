@@ -259,7 +259,7 @@ exports.login = async (req, res, next) => {
 
 			const formattedDate = `${date}/${month}/${year}`;
 			const formattedTime = `${hours}:${minutes}:${seconds} UTC`;
-
+			console.log(city)
 			emailOptions = {
 				to: email,
 				subject: "A new login to your account | Rainbow",
@@ -274,7 +274,7 @@ exports.login = async (req, res, next) => {
 				`,
 			};
 
-			console.log(city)
+			
 
 			// sendMail(emailOptions);
 		}
