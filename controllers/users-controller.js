@@ -1,6 +1,3 @@
-// Dependenices
-const { redis, getAsync } = require("../config/redis-connect");
-
 // Models
 const User = require("../models/User");
 
@@ -24,22 +21,6 @@ exports.getUser = async (req, res, next) => {
 	}
 
 	try {
-
-		// const cachedUser = await getAsync(id);
-
-		// if (cachedUser) {
-		// 	return res.status(200).json({
-		// 		status: {
-		// 			isError: false,
-		// 			message: "Done",
-		// 		},
-		// 		body: {
-		// 			user: makeUser(JSON.parse(cachedUser)),
-		// 			isCurrentUser: id === req.user.profileId,
-		// 		},
-		// 	})
-		// }
-
 		const user = await User.findOne({ profileId: id })
 			.select("-passwordData -email -provider")
 			.populate({
@@ -56,11 +37,13 @@ exports.getUser = async (req, res, next) => {
 			);
 		}
 
-		// redis.set(id, JSON.stringify(user), (error) => {
-		// 	if (error) {
-		// 		console.log(error);
-		// 	}
-		// });
+		let isOnline = false;
+
+		req.wss.clients.forEach(client => {
+			if (user._id.toString() === client.id) {
+				isOnline = true;
+			}
+		})
 
 		return res.status(200).json({
 			status: {
@@ -68,7 +51,7 @@ exports.getUser = async (req, res, next) => {
 				message: "Done",
 			},
 			body: {
-				user: makeUser(user),
+				user: makeUser(user, isOnline),
 				isCurrentUser: id === req.user.profileId,
 			},
 		});
@@ -164,7 +147,7 @@ const transformUsers = (users, limit) => {
 	return [tranformedUsers, hasMoreData];
 }
 
-const makeUser = (user) => {
+const makeUser = (user, isOnline) => {
 	const posts = user.posts.map((post) => ({
 		postText: post.postText,
 		isPublic: post.isPublic,
@@ -181,6 +164,7 @@ const makeUser = (user) => {
 		givenName: user.givenName,
 		familyName: user.familyName,
 		role: user.role,
+		isOnline,
 		
 		birthday: user.birthday,
 		registrationDate: user.registrationDate,

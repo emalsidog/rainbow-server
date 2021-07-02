@@ -6,7 +6,7 @@ const errorHandler = (err, req, res, next) => {
 
 	error.message = err.message;
 
-    // console.log(err);
+    console.log(err);
 
 	// Mongoose error code for duplicate key
 	if (err.code === 11000) {

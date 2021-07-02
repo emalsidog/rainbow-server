@@ -89,12 +89,14 @@ wss.on("connection", function connection(ws) {
 	if (id) {
 		ws.id = id;
 
-		ws.send(
-			JSON.stringify({
-				type: "CONNECTED_USER_ID",
-				id,
-			})
-		);
+		ws.send(JSON.stringify({ type: "CONNECTED_USER_ID",	id }));
+
+        wss.clients.forEach(client => {
+            client.send(JSON.stringify({ 
+                type: "ONLINE_STATUS", 
+                isOnline: true
+            }));
+        });
 	}
 
 	ws.on("message", (data) => {
@@ -114,6 +116,12 @@ wss.on("connection", function connection(ws) {
 	ws.on("close", () => {
         // ws.send({  })
 		console.log("A client disconnected");
+		wss.clients.forEach(client => {
+            client.send(JSON.stringify({ 
+                type: "ONLINE_STATUS", 
+                isOnline: false
+            }));
+        });
 		id = undefined;
 	});
 });
