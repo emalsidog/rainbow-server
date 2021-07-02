@@ -205,11 +205,14 @@ exports.friendRequest = async (req, res, next) => {
 			},
 		};
 
+		console.log("========================");
 		req.wss.clients.forEach((client) => {
+			console.log(client.id)
 			if (client.id.toString() === userToAddToFriends._id.toString()) {
 				client.send(JSON.stringify(webSocketPayload));
 			}
 		});
+		console.log("========================");
 
 		res.status(200).json({
 			status: {
