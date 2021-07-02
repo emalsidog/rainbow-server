@@ -590,6 +590,7 @@ exports.logout = (req, res) => {
 
 	req.wss.clients.forEach((client) => {
 		if (client.id.toString() === req.user._id.toString()) {
+			client.send(JSON.stringify({ type: "CLOSE_CONNECTION" }));
 			client.close();
 		}
 	});

@@ -83,6 +83,7 @@ wss.on("connection", function connection(ws) {
     console.log("A client connected");
 
     if (id) {
+        console.log("[CONNECTION EVENT]");
         ws.id = id;
 
         ws.send(JSON.stringify({
@@ -91,12 +92,16 @@ wss.on("connection", function connection(ws) {
         }));
     }
 
-    ws.on("message", (id) => {
-        ws.id = id;
+    ws.on("message", (data) => {
+        console.log("[MESSAGE EVENT]: " + data);
+        if (data) {
+            ws.id = data;
+        }
     });
 
     ws.on("close", () => {
         console.log("A client disconnected");
+        id = undefined;
     });
 });
 
