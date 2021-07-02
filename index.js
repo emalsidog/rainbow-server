@@ -105,11 +105,14 @@ wss.on("connection", function connection(ws) {
 				if (response.id) {
 					return (ws.id = response.id);
 				}
+            case "PING": {
+                return console.log("PING")
+            }
 		}
 	});
 
-	ws.on("close", (client) => {
-        console.log(client.id);
+	ws.on("close", () => {
+        // ws.send({  })
 		console.log("A client disconnected");
 		id = undefined;
 	});
