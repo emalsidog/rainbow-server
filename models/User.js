@@ -13,7 +13,7 @@ const UserSchema = new mongoose.Schema({
 			type: String,
 			default: process.env.NODE_ENV === "development" 
 				? "http://localhost:4000/avatars/default.png" 
-				: "https://rainbow-client.herokuapp.com/avatars/default.png",
+				: "https://rainbow-server-api.herokuapp.com/avatars/default.png",
 		},
 		fileName: {
 			type: String,
