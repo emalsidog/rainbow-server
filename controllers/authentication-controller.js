@@ -269,7 +269,7 @@ exports.login = async (req, res, next) => {
 						on ${formattedDate} at ${formattedTime}.
 					</div>
 					<div>
-						Location: ${city.city.names.en}, ${city.country.names.en} (IP = ${ip})
+						Location: ${city?.city.names.en}, ${city?.country.names.en} (IP = ${ip})
 					</div>
 				`,
 			};
