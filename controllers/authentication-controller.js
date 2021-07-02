@@ -576,13 +576,6 @@ exports.getCurrentUser = async (req, res, next) => {
 // LOGOUT
 
 exports.logout = (req, res) => {
-
-	req.wss.clients.forEach((client) => {
-		if (client.id.toString() === req.user._id.toString()) {
-			client.close();
-		}
-	});
-
 	res.clearCookie("accessToken", {
 		path: "/",
 		sameSite: "none",
@@ -593,6 +586,12 @@ exports.logout = (req, res) => {
 		sameSite: "none",
 		secure: true,
 		httpOnly: true,
+	});
+
+	req.wss.clients.forEach((client) => {
+		if (client.id.toString() === req.user._id.toString()) {
+			client.close();
+		}
 	});
 
 	res.json({
