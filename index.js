@@ -83,28 +83,11 @@ app.use((req, res, next) => {
 	next();
 });
 
-const noop = () => {};
-
-const heartbeat = () => {
-	this.isAlive = true;
-};
-
-const interval = setInterval(function ping() {
-	wss.clients.forEach(function each(ws) {
-		if (ws.isAlive === false) return ws.terminate();
-
-		ws.isAlive = false;
-		ws.ping(noop);
-	});
-}, 30000);
-
 wss.on("connection", function connection(ws) {
 	console.log("A client connected");
 
 	if (id) {
 		ws.id = id;
-
-		ws.isAlive = true;
 
 		ws.send(
 			JSON.stringify({
@@ -114,28 +97,22 @@ wss.on("connection", function connection(ws) {
 		);
 	}
 
-	ws.on("pong", heartbeat);
-
 	ws.on("message", (data) => {
 		const response = JSON.parse(data);
 
 		switch (response.type) {
 			case "GET_USER_ID":
 				if (response.id) {
-					ws.isAlive = true;
 					return (ws.id = response.id);
 				}
 		}
 	});
 
-	ws.on("close", () => {
+	ws.on("close", (client) => {
+        console.log(client.id);
 		console.log("A client disconnected");
 		id = undefined;
 	});
-});
-
-wss.on("close", () => {
-    clearInterval(interval);
 });
 
 // Error handler
