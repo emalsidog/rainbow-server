@@ -82,10 +82,19 @@ app.use((req, res, next) => {
 wss.on("connection", function connection(ws) {
     console.log("A client connected");
 
-    ws.id = id;
-    wss.clients.forEach(client => {
-        console.log({ id: client.id });
+    if (id) {
+        ws.id = id;
+
+        ws.send(JSON.stringify({
+            type: "CONNECTED_USER_ID",
+            id
+        }));
+    }
+
+    ws.on("message", (id) => {
+        ws.id = id;
     });
+
     ws.on("close", () => {
         console.log("A client disconnected");
     });
