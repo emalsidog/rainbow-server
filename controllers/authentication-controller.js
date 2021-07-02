@@ -274,7 +274,9 @@ exports.login = async (req, res, next) => {
 				`,
 			};
 
-			sendMail(emailOptions);
+			console.log(city)
+
+			// sendMail(emailOptions);
 		}
 
 		// Save tokens in locals in order to establish socket connection
