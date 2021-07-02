@@ -245,7 +245,7 @@ exports.login = async (req, res, next) => {
 				req.headers["x-forwarded-for"] || req.connection.remoteAddress;
 
 			// Looking for country with the help of web client of MAX MIND
-			const city = await client.city(ip);
+			const { city, country } = await client.city(ip);
 
 			const newDate = new Date();
 
@@ -259,7 +259,7 @@ exports.login = async (req, res, next) => {
 
 			const formattedDate = `${date}/${month}/${year}`;
 			const formattedTime = `${hours}:${minutes}:${seconds} UTC`;
-			console.log(city)
+
 			emailOptions = {
 				to: email,
 				subject: "A new login to your account | Rainbow",
@@ -269,14 +269,12 @@ exports.login = async (req, res, next) => {
 						on ${formattedDate} at ${formattedTime}.
 					</div>
 					<div>
-						Location: ${city.names.en}, ${city.country.names.en} (IP = ${ip})
+						Location: ${city ? `${city.names.en}, ` : " "}${country.names.en} (IP = ${ip})
 					</div>
 				`,
 			};
 
-			
-
-			// sendMail(emailOptions);
+			sendMail(emailOptions);
 		}
 
 		// Save tokens in locals in order to establish socket connection
