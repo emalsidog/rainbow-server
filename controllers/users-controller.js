@@ -164,7 +164,9 @@ const makeUser = (user, isOnline) => {
 		givenName: user.givenName,
 		familyName: user.familyName,
 		role: user.role,
+
 		isOnline,
+		lastSeenOnline: user.lastSeenOnline,
 		
 		birthday: user.birthday,
 		registrationDate: user.registrationDate,

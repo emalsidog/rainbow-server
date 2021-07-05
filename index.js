@@ -11,6 +11,9 @@ const jwt = require("jsonwebtoken");
 // Utils
 const ErrorResponse = require("./utils/error-response");
 
+// Models
+const User = require("./models/User");
+
 // Configuring server
 const app = express();
 const server = http.createServer(app);
@@ -94,7 +97,9 @@ wss.on("connection", function connection(ws) {
         wss.clients.forEach(client => {
             client.send(JSON.stringify({ 
                 type: "ONLINE_STATUS", 
-                isOnline: true
+				payload: {
+					isOnline: true,
+				}
             }));
         });
 	}
@@ -113,16 +118,21 @@ wss.on("connection", function connection(ws) {
 		}
 	});
 
-	ws.on("close", () => {
-        // ws.send({  })
-		console.log("A client disconnected");
+	ws.on("close", async () => {
+		const lastSeenOnline = new Date();
+
 		wss.clients.forEach(client => {
             client.send(JSON.stringify({ 
-                type: "ONLINE_STATUS", 
-                isOnline: false
+                type: "ONLINE_STATUS",
+				payload: {
+					isOnline: false,
+					lastSeenOnline
+				}
             }));
         });
 		id = undefined;
+
+		await User.findByIdAndUpdate(ws.id, { lastSeenOnline });
 	});
 });
 

@@ -32,8 +32,7 @@ exports.register = async (req, res, next) => {
 		return next(new ErrorResponse(message, 422));
 	}
 
-	const { givenName, familyName, email, password, confirmPassword } =
-		req.body;
+	const { givenName, familyName, email, password, confirmPassword } = req.body;
 
 	if (password !== confirmPassword) {
 		return next(new ErrorResponse("Passwords do not match", 400));
@@ -319,7 +318,6 @@ exports.login = async (req, res, next) => {
 		// Call next middleware (socket connection)
 		next();
 	} catch (error) {
-		console.log(error);
 		return next(error);
 	}
 };
@@ -514,10 +512,10 @@ exports.reset = async (req, res, next) => {
 		});
 	} catch (error) {
 		if (error instanceof jwt.TokenExpiredError) {
-			return next(new ErrorResponse("Token has expired", 400));
+			return next(new ErrorResponse("Your session has expired", 400));
 		}
 		if (error instanceof jwt.JsonWebTokenError) {
-			return next(new ErrorResponse("Token is invalid", 400));
+			return next(new ErrorResponse("Something is wrong with your session", 400));
 		}
 		next(error);
 	}

@@ -41,10 +41,13 @@ const UserSchema = new mongoose.Schema({
 		type: String,
 		required: true
 	},
-	role: {
+	accountType: {
 		type: String,
 		enum: ["DEVELOPER", "MEMBER", "VERIFIED"],
 		default: "MEMBER"
+	},
+	lastSeenOnline: {
+		type: Date,
 	},
 	email: {
 		address: {
