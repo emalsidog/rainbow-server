@@ -1,5 +1,5 @@
 // Dependencies
-const router = require ("express").Router();
+const router = require("express").Router();
 
 // Controllers
 const Friends = require("../controllers/friends-controller");

@@ -28,7 +28,8 @@ exports.getUser = async (req, res, next) => {
 				select: "isPublic timePosted postText",
 				options: {
 					sort: { "timePosted": -1 }
-				}
+				},
+				limit: 5,
 			})
 
 		if (!user) {

@@ -8,6 +8,8 @@ const Post = require("../controllers/post-controller");
 const authenticate = require("../middleware/authenticate");
 const validate = require("../input-validation/post-validation");
 
+router.post("/", authenticate, Post.getPosts)
+
 router.post("/add-post", authenticate, validate("addPost"), Post.addPost);
 
 router.post("/delete-post", authenticate, Post.deletePost);

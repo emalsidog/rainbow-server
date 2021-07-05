@@ -1,5 +1,4 @@
 // Dependencies
-const { redis, getAsync } = require("../config/redis-connect");
 const { validationResult } = require("express-validator");
 
 // Models
@@ -9,6 +8,50 @@ const Post = require("../models/Post");
 // Utils
 const ErrorResponse = require("../utils/error-response");
 const checkMongooseId = require("../utils/check-id").checkMongooseId;
+
+// GET POSTS
+
+exports.getPosts = async (req, res, next) => {
+	const { id, page } = req.body;
+
+	const limit = 5;
+	const skip = limit * (page - 1);
+
+	try {
+		const user = await User.findById(id)
+			.select("posts")
+			.sort({ timePosted: -1 })
+			.populate({
+				path: "posts",
+				select: "isPublic timePosted postText",
+				limit: 5,
+				skip
+			});
+
+		const posts = user.posts.map((post) => {
+			const { postText, isPublic, _id, timePosted } = post;
+			return {
+				postText,
+				isPublic,
+				postId: _id,
+				timePosted
+			};
+		});
+
+		res.status(200).json({
+			status: {
+				isError: false,
+				message: "Done"
+			},
+			body: {
+				hasMorePosts: !(posts.length < limit),
+				posts
+			}
+		});
+	} catch (error) {
+		next(error);
+	}
+};
 
 // ADD POST
 
@@ -35,7 +78,7 @@ exports.addPost = async (req, res, next) => {
 			postText,
 			isPublic,
 			author: req.user._id,
-			timePosted: new Date()
+			timePosted: new Date(),
 		});
 
 		const post = {
@@ -74,6 +117,8 @@ exports.addPost = async (req, res, next) => {
 		next(error);
 	}
 };
+
+// DELETE POST
 
 exports.deletePost = async (req, res, next) => {
 	const { postId } = req.body;
@@ -124,6 +169,8 @@ exports.deletePost = async (req, res, next) => {
 	}
 };
 
+// EDIT POST
+
 exports.editPost = async (req, res, next) => {
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
@@ -159,8 +206,8 @@ exports.editPost = async (req, res, next) => {
 
 		const webSocketPayload = {
 			type: "POST_UPDATED",
-			payload: updatedPost
-		}
+			payload: updatedPost,
+		};
 
 		req.wss.clients.forEach((client) => {
 			if (client.id.toString() !== req.user._id.toString()) {
@@ -171,13 +218,12 @@ exports.editPost = async (req, res, next) => {
 		res.status(200).json({
 			status: {
 				isError: false,
-				message: "Successfully saved"
-			}, 
+				message: "Successfully saved",
+			},
 			body: {
-				updatedPost
-			}
-		})
-
+				updatedPost,
+			},
+		});
 	} catch (error) {
 		next(error);
 	}
