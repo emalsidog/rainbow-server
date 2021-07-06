@@ -20,13 +20,15 @@ exports.getPosts = async (req, res, next) => {
 	try {
 		const user = await User.findById(id)
 			.select("posts")
-			.sort({ timePosted: -1 })
 			.populate({
 				path: "posts",
 				select: "isPublic timePosted postText",
-				limit: 5,
-				skip
+				sort: { timePosted: -1 },
+				skip,
+				limit
 			});
+
+		console.log(user.posts)
 
 		const posts = user.posts.map((post) => {
 			const { postText, isPublic, _id, timePosted } = post;
