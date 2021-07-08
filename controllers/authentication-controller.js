@@ -283,13 +283,13 @@ exports.login = async (req, res, next) => {
 
 		// Send Access token to the client
 		res.cookie("accessToken", accessToken, {
-			// secure: true,
+			secure: true,
 			httpOnly: true,
-			// sameSite: "none",
+			sameSite: "none",
 		}).cookie("refreshToken", refreshToken, {
-			// secure: true,
+			secure: true,
 			httpOnly: true,
-			// sameSite: "none",
+			sameSite: "none",
 		});
 
 		const { avatar, email: emailData, passwordData } = user;
@@ -350,13 +350,13 @@ exports.refresh = async (req, res, next) => {
 		);
 
 		res.cookie("accessToken", newAccessToken, {
-			// secure: true,
+			secure: true,
 			httpOnly: true,
-			// sameSite: "none",
+			sameSite: "none",
 		}).cookie("refreshToken", newRefreshToken, {
-			// secure: true,
+			secure: true,
 			httpOnly: true,
-			// sameSite: "none",
+			sameSite: "none",
 		});
 
 		res.status(200).json({
