@@ -115,7 +115,7 @@ wss.on("connection", function connection(ws) {
 					return (ws.id = response.id);
 				}
 			case "PING": {
-				return console.log("PING");
+				return;
 			}
 
 			case "ADD_MESSAGE": {

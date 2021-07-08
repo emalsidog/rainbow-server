@@ -9,7 +9,7 @@ const checkMongooseId = require("../utils/check-id").checkMongooseId;
 
 exports.getPopulatedFriends = async (req, res, next) => {
 	const { options, requestOptions } = req.body;
-	
+
 	const limit = 24;
 	const skip = limit * (requestOptions.page - 1);
 
@@ -21,16 +21,16 @@ exports.getPopulatedFriends = async (req, res, next) => {
 					path: "friends",
 					select: "-passwordData -email -provider -posts -__v",
 					limit,
-					skip
+					skip,
 				});
-	
+
 			const transformedFriends = friends.map((friend) => {
 				return {
 					...friend._doc,
 					avatar: friend.avatar.linkToAvatar,
 				};
 			});
-			
+
 			return res.status(200).json({
 				status: {
 					isError: false,
@@ -41,8 +41,8 @@ exports.getPopulatedFriends = async (req, res, next) => {
 					meta: {
 						hasMoreData: !(transformedFriends.length < limit),
 						hasMoreSearchedData: true,
-						usersNeedToBeCleared: requestOptions.page === 1
-					}
+						usersNeedToBeCleared: requestOptions.page === 1,
+					},
 				},
 			});
 		}
@@ -58,15 +58,14 @@ exports.getPopulatedFriends = async (req, res, next) => {
 			},
 		};
 
-		const { friends } = await User
-			.findById(req.user._id)
+		const { friends } = await User.findById(req.user._id)
 			.select("friends")
 			.populate({
 				path: "friends",
 				select: "-passwordData -email -provider -posts -__v",
 				limit,
 				skip,
-				match: filter
+				match: filter,
 			});
 
 		const transformedFriends = friends.map((friend) => {
@@ -86,19 +85,18 @@ exports.getPopulatedFriends = async (req, res, next) => {
 				meta: {
 					hasMoreSearchedData: !(transformedFriends.length < limit),
 					hasMoreData: true,
-					usersNeedToBeCleared: requestOptions.page === 1
-				}
+					usersNeedToBeCleared: requestOptions.page === 1,
+				},
 			},
 		});
 	} catch (error) {
 		next(error);
-	}	
+	}
 };
 
 // GET FRIEND REQUESTS
 
 exports.getPopulatedFriendRequests = async (req, res, next) => {
-
 	const { requestOptions } = req.body;
 
 	const limit = 24;
@@ -111,7 +109,7 @@ exports.getPopulatedFriendRequests = async (req, res, next) => {
 				path: "friendRequests",
 				select: "-passwordData -email -provider -posts -__v",
 				skip,
-				limit
+				limit,
 			});
 
 		const transformedRequests = friendRequests.map((friend) => {
@@ -128,7 +126,7 @@ exports.getPopulatedFriendRequests = async (req, res, next) => {
 			},
 			body: {
 				friendRequests: transformedRequests,
-				hasMoreData: !(transformedRequests.length < limit)
+				hasMoreData: !(transformedRequests.length < limit),
 			},
 		});
 	} catch (error) {
@@ -200,19 +198,16 @@ exports.friendRequest = async (req, res, next) => {
 				},
 				serverData: {
 					currentUserId: currentUser._id,
-					requestsCount: userToAddToFriends.friendRequests.length
+					requestsCount: userToAddToFriends.friendRequests.length,
 				},
 			},
 		};
 
-		console.log("========================");
 		req.wss.clients.forEach((client) => {
-			console.log(client.id)
 			if (client.id.toString() === userToAddToFriends._id.toString()) {
 				client.send(JSON.stringify(webSocketPayload));
 			}
 		});
-		console.log("========================");
 
 		res.status(200).json({
 			status: {
@@ -290,7 +285,7 @@ exports.acceptFriendRequest = async (req, res, next) => {
 			},
 			body: {
 				newFriendId: userToAccept._id,
-				requestsCount: currentUser.friendRequests.length
+				requestsCount: currentUser.friendRequests.length,
 			},
 		});
 	} catch (error) {
@@ -350,7 +345,7 @@ exports.declineFriendRequest = async (req, res, next) => {
 			},
 			body: {
 				declinedRequestId: id,
-				requestsCount: user.friendRequests.length
+				requestsCount: user.friendRequests.length,
 			},
 		});
 	} catch (error) {
@@ -392,7 +387,7 @@ exports.cancelFriendRequest = async (req, res, next) => {
 			payload: {
 				serverData: {
 					idOfUserWhoCancelled: req.user._id,
-					requestsCount: user.friendRequests.length
+					requestsCount: user.friendRequests.length,
 				},
 			},
 		};
