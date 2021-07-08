@@ -32,7 +32,8 @@ exports.register = async (req, res, next) => {
 		return next(new ErrorResponse(message, 422));
 	}
 
-	const { givenName, familyName, email, password, confirmPassword } = req.body;
+	const { givenName, familyName, email, password, confirmPassword } =
+		req.body;
 
 	if (password !== confirmPassword) {
 		return next(new ErrorResponse("Passwords do not match", 400));
@@ -44,8 +45,8 @@ exports.register = async (req, res, next) => {
 			return next(new ErrorResponse("Email is already registered", 400));
 		}
 
-		const transformedGivenName = transformName(givenName)
-		const transformedFamilyName = transformName(familyName)
+		const transformedGivenName = transformName(givenName);
+		const transformedFamilyName = transformName(familyName);
 
 		const newUser = {
 			givenName: transformedGivenName,
@@ -282,13 +283,13 @@ exports.login = async (req, res, next) => {
 
 		// Send Access token to the client
 		res.cookie("accessToken", accessToken, {
-			secure: true,
+			// secure: true,
 			httpOnly: true,
-			sameSite: "none",
+			// sameSite: "none",
 		}).cookie("refreshToken", refreshToken, {
-			secure: true,
+			// secure: true,
 			httpOnly: true,
-			sameSite: "none",
+			// sameSite: "none",
 		});
 
 		const { avatar, email: emailData, passwordData } = user;
@@ -349,13 +350,13 @@ exports.refresh = async (req, res, next) => {
 		);
 
 		res.cookie("accessToken", newAccessToken, {
-			secure: true,
+			// secure: true,
 			httpOnly: true,
-			sameSite: "none",
+			// sameSite: "none",
 		}).cookie("refreshToken", newRefreshToken, {
-			secure: true,
+			// secure: true,
 			httpOnly: true,
-			sameSite: "none",
+			// sameSite: "none",
 		});
 
 		res.status(200).json({
@@ -515,7 +516,9 @@ exports.reset = async (req, res, next) => {
 			return next(new ErrorResponse("Your session has expired", 400));
 		}
 		if (error instanceof jwt.JsonWebTokenError) {
-			return next(new ErrorResponse("Something is wrong with your session", 400));
+			return next(
+				new ErrorResponse("Something is wrong with your session", 400)
+			);
 		}
 		next(error);
 	}

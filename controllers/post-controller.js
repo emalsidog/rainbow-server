@@ -23,12 +23,10 @@ exports.getPosts = async (req, res, next) => {
 			.populate({
 				path: "posts",
 				select: "isPublic timePosted postText",
-				sort: { timePosted: -1 },
 				skip,
-				limit
-			});
-
-		console.log(user.posts)
+				limit,
+			})
+			.sort({ timePosted: 1 });
 
 		const posts = user.posts.map((post) => {
 			const { postText, isPublic, _id, timePosted } = post;
@@ -36,19 +34,19 @@ exports.getPosts = async (req, res, next) => {
 				postText,
 				isPublic,
 				postId: _id,
-				timePosted
+				timePosted,
 			};
 		});
 
 		res.status(200).json({
 			status: {
 				isError: false,
-				message: "Done"
+				message: "Done",
 			},
 			body: {
 				hasMorePosts: !(posts.length < limit),
-				posts
-			}
+				posts,
+			},
 		});
 	} catch (error) {
 		next(error);

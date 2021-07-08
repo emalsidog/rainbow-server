@@ -92,44 +92,65 @@ wss.on("connection", function connection(ws) {
 	if (id) {
 		ws.id = id;
 
-		ws.send(JSON.stringify({ type: "CONNECTED_USER_ID",	id }));
+		ws.send(JSON.stringify({ type: "CONNECTED_USER_ID", id }));
 
-        wss.clients.forEach(client => {
-            client.send(JSON.stringify({ 
-                type: "ONLINE_STATUS", 
-				payload: {
-					isOnline: true,
-				}
-            }));
-        });
+		wss.clients.forEach((client) => {
+			client.send(
+				JSON.stringify({
+					type: "ONLINE_STATUS",
+					payload: {
+						isOnline: true,
+					},
+				})
+			);
+		});
 	}
 
 	ws.on("message", (data) => {
 		const response = JSON.parse(data);
-		console.log(response)
+
 		switch (response.type) {
 			case "GET_USER_ID":
 				if (response.id) {
 					return (ws.id = response.id);
 				}
-            case "PING": {
-                return console.log("PING")
-            }
+			case "PING": {
+				return console.log("PING");
+			}
+
+			case "ADD_MESSAGE": {
+				const { message, recipients } = response.payload;
+
+				wss.clients.forEach((client) => {
+					recipients.forEach((recipient) => {
+						if (recipient._id === client.id) {
+							client.send(
+								JSON.stringify({
+									type: "ADD_MESSAGE",
+									payload: message,
+								})
+							);
+						}
+					});
+				});
+			}
 		}
 	});
 
 	ws.on("close", async () => {
 		const lastSeenOnline = new Date();
 
-		wss.clients.forEach(client => {
-            client.send(JSON.stringify({ 
-                type: "ONLINE_STATUS",
-				payload: {
-					isOnline: false,
-					lastSeenOnline
-				}
-            }));
-        });
+		wss.clients.forEach((client) => {
+			client.send(
+				JSON.stringify({
+					type: "ONLINE_STATUS",
+					payload: {
+						isOnline: false,
+						lastSeenOnline,
+					},
+				})
+			);
+		});
 		id = undefined;
 
 		await User.findByIdAndUpdate(ws.id, { lastSeenOnline });

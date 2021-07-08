@@ -11,9 +11,10 @@ const UserSchema = new mongoose.Schema({
 	avatar: {
 		linkToAvatar: {
 			type: String,
-			default: process.env.NODE_ENV === "development" 
-				? "http://localhost:4000/avatars/default.png" 
-				: "https://rainbow-server-api.herokuapp.com/avatars/default.png",
+			default:
+				process.env.NODE_ENV === "development"
+					? "http://localhost:4000/avatars/default.png"
+					: "https://rainbow-server-api.herokuapp.com/avatars/default.png",
 		},
 		fileName: {
 			type: String,
@@ -39,12 +40,12 @@ const UserSchema = new mongoose.Schema({
 	},
 	displayName: {
 		type: String,
-		required: true
+		required: true,
 	},
 	accountType: {
 		type: String,
 		enum: ["DEVELOPER", "MEMBER", "VERIFIED"],
-		default: "MEMBER"
+		default: "MEMBER",
 	},
 	lastSeenOnline: {
 		type: Date,
@@ -91,22 +92,24 @@ const UserSchema = new mongoose.Schema({
 		type: Date,
 		default: new Date(),
 	},
-	posts: [{
-		type: mongoose.Schema.Types.ObjectId,
-		ref: "Post"
-	}],
-	friendRequests: [{
-		type: mongoose.Schema.Types.ObjectId,
-		ref: "User"
-	}],
-	friends: [{
-		type: mongoose.Schema.Types.ObjectId,
-		ref: "User"
-	}],
-	chats: [{
-		type: mongoose.Schema.Types.ObjectId,
-		ref: "Chat"
-	}]
+	posts: [
+		{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Post",
+		},
+	],
+	friendRequests: [
+		{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "User",
+		},
+	],
+	friends: [
+		{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "User",
+		},
+	],
 });
 
 UserSchema.pre("save", async function (next) {
