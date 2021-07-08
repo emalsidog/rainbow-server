@@ -13,6 +13,8 @@ const ErrorResponse = require("./utils/error-response");
 
 // Models
 const User = require("./models/User");
+const Message = require("./models/Message");
+const Chat = require("./models/Chat");
 
 // Configuring server
 const app = express();
@@ -106,9 +108,9 @@ wss.on("connection", function connection(ws) {
 		});
 	}
 
-	ws.on("message", (data) => {
+	ws.on("message", async (data) => {
 		const response = JSON.parse(data);
-
+		console.log(response);
 		switch (response.type) {
 			case "GET_USER_ID":
 				if (response.id) {
@@ -133,6 +135,17 @@ wss.on("connection", function connection(ws) {
 						}
 					});
 				});
+
+				const chat = await Chat.findOne({ chatId: message.chatId });
+				if (!chat) throw new Error("Error");
+
+				const newMessage = new Message({
+					...message,
+				});
+				chat.messages.push(newMessage._id);
+
+				await chat.save();
+				await newMessage.save();
 			}
 		}
 	});

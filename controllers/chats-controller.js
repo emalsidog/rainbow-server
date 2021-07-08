@@ -64,6 +64,9 @@ exports.getChats = async (req, res, next) => {
 			.populate({
 				path: "creator",
 				select: selectString,
+			})
+			.populate({
+				path: "messages",
 			});
 
 		res.status(200).json({
