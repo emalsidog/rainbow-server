@@ -110,7 +110,7 @@ wss.on("connection", function connection(ws) {
 
 	ws.on("message", async (data) => {
 		const response = JSON.parse(data);
-		console.log(response);
+
 		switch (response.type) {
 			case "GET_USER_ID":
 				if (response.id) {

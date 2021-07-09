@@ -12,6 +12,8 @@ const ErrorResponse = require("../utils/error-response");
 exports.createChat = async (req, res, next) => {
 	const { participants } = req.body;
 
+	const currentUserId = req.user._id;
+
 	for (let participantId of participants) {
 		if (!req.user.friends.includes(participantId))
 			return next(
@@ -22,21 +24,72 @@ exports.createChat = async (req, res, next) => {
 			);
 	}
 
+	const chat = await Chat.findOne({
+		$or: [
+			{
+				creator: currentUserId,
+				participants,
+			},
+			{
+				participants: { $in: [currentUserId] },
+			},
+		],
+	}).select("-__v -_id");
+
+	if (chat) {
+		return res.status(200).json({
+			status: {
+				isError: false,
+				message: "Redirecting...",
+			},
+			body: {
+				chatId: chat.chatId,
+			},
+		});
+	}
+
 	const nanoid = customAlphabet(alphabet, 30);
 
-	const newChat = new Chat({
+	const createdChat = {
 		chatId: nanoid(),
 		creator: req.user._id,
 		participants,
-	});
+		messages: [],
+	};
+
+	const newChat = new Chat(createdChat);
 
 	try {
-		await newChat.save();
+		const chat = await newChat.save();
+		const popualtedChat = await chat
+			.populate({
+				path: "participants",
+				select: "avatar.linkToAvatar givenName familyName profileId _id",
+			})
+			.populate({
+				path: "creator",
+				select: "avatar.linkToAvatar givenName familyName profileId _id",
+			})
+			.execPopulate();
+
+		req.wss.clients.forEach((client) => {
+			if (participants.includes(client.id)) {
+				client.send(
+					JSON.stringify({
+						type: "NEW_CHAT_CREATED",
+						payload: popualtedChat,
+					})
+				);
+			}
+		});
 
 		return res.status(200).json({
 			status: {
 				isError: false,
-				message: "Done",
+				message: "Chat created",
+			},
+			body: {
+				chatId: createdChat.chatId,
 			},
 		});
 	} catch (error) {
