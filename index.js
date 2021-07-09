@@ -124,16 +124,14 @@ wss.on("connection", function connection(ws) {
 				const { message, recipients } = response.payload;
 
 				wss.clients.forEach((client) => {
-					recipients.forEach((recipient) => {
-						if (recipient._id === client.id) {
-							client.send(
-								JSON.stringify({
-									type: "ADD_MESSAGE",
-									payload: message,
-								})
-							);
-						}
-					});
+					if (recipients.includes(client.id)) {
+						client.send(
+							JSON.stringify({
+								type: "ADD_MESSAGE",
+								payload: message,
+							})
+						);
+					}
 				});
 
 				const chat = await Chat.findOne({ chatId: message.chatId });
@@ -146,6 +144,28 @@ wss.on("connection", function connection(ws) {
 
 				await chat.save();
 				await newMessage.save();
+
+				break;
+			}
+
+			case "CHANGE_CHAT_PROCESS": {
+				const { process, chatId, whoInAction, chatParticipantsIds } =
+					response.payload;
+
+				return wss.clients.forEach((client) => {
+					if (chatParticipantsIds.includes(client.id)) {
+						client.send(
+							JSON.stringify({
+								type: "CHANGE_CHAT_PROCESS",
+								payload: {
+									processType: process,
+									chatId,
+									whoInAction,
+								},
+							})
+						);
+					}
+				});
 			}
 		}
 	});
