@@ -38,7 +38,7 @@ app.use(
 		origin:
 			process.env.NODE_ENV === "development"
 				? "http://localhost:3000"
-				: "https://rainbow-client.herokuapp.com",
+				: "https://rainbow-tm.herokuapp.com",
 	})
 );
 

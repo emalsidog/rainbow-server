@@ -12,10 +12,18 @@ const checkMongooseId = require("../utils/check-id").checkMongooseId;
 // GET POSTS
 
 exports.getPosts = async (req, res, next) => {
-	const { id, page } = req.body;
+	const { id, page, isCurrentUser } = req.body;
 
 	const limit = 5;
 	const skip = limit * (page - 1);
+
+	let match = null;
+
+	if (!isCurrentUser) {
+		match = {
+			isPublic: true,
+		};
+	}
 
 	try {
 		const user = await User.findById(id)
@@ -25,8 +33,11 @@ exports.getPosts = async (req, res, next) => {
 				select: "isPublic timePosted postText",
 				skip,
 				limit,
-			})
-			.sort({ timePosted: 1 });
+				match,
+				options: {
+					sort: { timePosted: -1 },
+				},
+			});
 
 		const posts = user.posts.map((post) => {
 			const { postText, isPublic, _id, timePosted } = post;
@@ -46,6 +57,7 @@ exports.getPosts = async (req, res, next) => {
 			body: {
 				hasMorePosts: !(posts.length < limit),
 				posts,
+				isCurrentUser,
 			},
 		});
 	} catch (error) {
@@ -88,21 +100,23 @@ exports.addPost = async (req, res, next) => {
 			timePosted: newPost.timePosted,
 		};
 
-		const webSocketPayload = {
-			type: "NEW_POST_ADDED",
-			payload: post,
-		};
-
 		user.posts.push(newPost._id);
 
 		await user.save();
 		await newPost.save();
 
-		req.wss.clients.forEach((client) => {
-			if (client.id.toString() !== req.user._id.toString()) {
-				client.send(JSON.stringify(webSocketPayload));
-			}
-		});
+		if (isPublic) {
+			const webSocketPayload = {
+				type: "NEW_POST_ADDED",
+				payload: post,
+			};
+
+			req.wss.clients.forEach((client) => {
+				if (client.id.toString() !== req.user._id.toString()) {
+					client.send(JSON.stringify(webSocketPayload));
+				}
+			});
+		}
 
 		res.status(200).json({
 			status: {
@@ -202,11 +216,26 @@ exports.editPost = async (req, res, next) => {
 			postText: post.postText,
 			isPublic: post.isPublic,
 			postId: postId,
+			timePosted: post.timePosted,
 		};
+
+		let payload;
+
+		if (post.isPublic) {
+			payload = {
+				updatedPost,
+				action: "UPDATE",
+			};
+		} else if (!post.isPublic) {
+			payload = {
+				postId,
+				action: "REMOVE",
+			};
+		}
 
 		const webSocketPayload = {
 			type: "POST_UPDATED",
-			payload: updatedPost,
+			payload,
 		};
 
 		req.wss.clients.forEach((client) => {

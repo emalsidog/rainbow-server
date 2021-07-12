@@ -21,7 +21,7 @@ const client = new WebServiceClient("559966", "XFgENwGMXSK6XRBD", {
 const clientUrl =
 	process.env.NODE_ENV === "development"
 		? "http://localhost:3000"
-		: "https://rainbow-client.herokuapp.com";
+		: "https://rainbow-tm.herokuapp.com";
 
 // REGISTER
 
@@ -197,13 +197,7 @@ exports.login = async (req, res, next) => {
 	const { email, password } = req.body;
 
 	try {
-		const user = await User.findOne({ "email.address": email }).populate({
-			path: "posts",
-			select: "isPublic timePosted postText _id",
-			options: {
-				sort: { timePosted: -1 },
-			},
-		});
+		const user = await User.findOne({ "email.address": email });
 
 		if (!user) {
 			return next(
@@ -217,13 +211,6 @@ exports.login = async (req, res, next) => {
 				new ErrorResponse("Email or password is incorrect", 400)
 			);
 		}
-
-		const posts = user.posts.map((post) => ({
-			postText: post.postText,
-			isPublic: post.isPublic,
-			postId: post._id,
-			timePosted: post.timePosted,
-		}));
 
 		// Access token
 		const accessToken = createToken(
@@ -305,7 +292,6 @@ exports.login = async (req, res, next) => {
 					avatar: avatar.linkToAvatar,
 					email: emailData.address,
 					lastTimeChanged: passwordData.lastTimeChanged,
-					posts,
 				},
 				changingEmailProcess: {
 					timeToNextEmail: emailData.nextEmailAvailableIn,
@@ -528,20 +514,7 @@ exports.reset = async (req, res, next) => {
 
 exports.getCurrentUser = async (req, res, next) => {
 	try {
-		const user = await User.findById(req.user._id).populate({
-			path: "posts",
-			select: "isPublic timePosted postText",
-			options: {
-				sort: { timePosted: -1 },
-			},
-		});
-
-		const posts = user.posts.map((post) => ({
-			postText: post.postText,
-			isPublic: post.isPublic,
-			postId: post._id,
-			timePosted: post.timePosted,
-		}));
+		const user = await User.findById(req.user._id);
 
 		const { avatar, email, passwordData } = user;
 
@@ -556,7 +529,6 @@ exports.getCurrentUser = async (req, res, next) => {
 					avatar: avatar.linkToAvatar,
 					email: email.address,
 					lastTimeChanged: passwordData.lastTimeChanged,
-					posts,
 				},
 				changingEmailProcess: {
 					timeToNextEmail: email.nextEmailAvailableIn,

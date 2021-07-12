@@ -20,17 +20,18 @@ exports.getUser = async (req, res, next) => {
 		return next(new ErrorResponse("ID is invalid", 400));
 	}
 
+	let match = null;
+
+	if (id !== req.user.profileId) {
+		match = {
+			isPublic: true,
+		};
+	}
+
 	try {
-		const user = await User.findOne({ profileId: id })
-			.select("-passwordData -email -provider")
-			.populate({
-				path: "posts",
-				select: "isPublic timePosted postText",
-				options: {
-					sort: { "timePosted": -1 }
-				},
-				limit: 5,
-			})
+		const user = await User.findOne({ profileId: id }).select(
+			"-passwordData -email -provider"
+		);
 
 		if (!user) {
 			return next(
@@ -40,11 +41,11 @@ exports.getUser = async (req, res, next) => {
 
 		let isOnline = false;
 
-		req.wss.clients.forEach(client => {
+		req.wss.clients.forEach((client) => {
 			if (user._id.toString() === client.id) {
 				isOnline = true;
 			}
-		})
+		});
 
 		return res.status(200).json({
 			status: {
@@ -56,7 +57,6 @@ exports.getUser = async (req, res, next) => {
 				isCurrentUser: id === req.user.profileId,
 			},
 		});
-		
 	} catch (error) {
 		next(error);
 	}
@@ -70,15 +70,17 @@ exports.searchUser = async (req, res, next) => {
 	const selectString = "-passwordData -email -provider";
 
 	let users = [];
-	try {	
+	try {
 		if (!options) {
-			users = await User
-				.find({ _id: { $ne: req.user._id } })
+			users = await User.find({ _id: { $ne: req.user._id } })
 				.select(selectString)
 				.skip(skip)
 				.limit(limit);
-			const [transformedUsers, hasMoreData] = transformUsers(users, limit);
-			
+			const [transformedUsers, hasMoreData] = transformUsers(
+				users,
+				limit
+			);
+
 			return res.status(200).json({
 				status: {
 					isError: false,
@@ -89,8 +91,8 @@ exports.searchUser = async (req, res, next) => {
 					meta: {
 						hasMoreData,
 						hasMoreSearchedData: true,
-						usersNeedToBeCleared: requestOptions.page === 1
-					}
+						usersNeedToBeCleared: requestOptions.page === 1,
+					},
 				},
 			});
 		}
@@ -106,8 +108,7 @@ exports.searchUser = async (req, res, next) => {
 			},
 		};
 
-		users = await User
-			.find(filter)
+		users = await User.find(filter)
 			.select(selectString)
 			.skip(skip)
 			.limit(limit);
@@ -123,8 +124,8 @@ exports.searchUser = async (req, res, next) => {
 				meta: {
 					hasMoreSearchedData: hasMoreData,
 					hasMoreData: true,
-					usersNeedToBeCleared: requestOptions.page === 1
-				}
+					usersNeedToBeCleared: requestOptions.page === 1,
+				},
 			},
 		});
 	} catch (error) {
@@ -138,15 +139,15 @@ const transformUsers = (users, limit) => {
 		return {
 			...user._doc,
 			avatar: user.avatar.linkToAvatar,
-		}
+		};
 	});
 
 	if (tranformedUsers.length < limit) {
 		hasMoreData = false;
 	}
-	
+
 	return [tranformedUsers, hasMoreData];
-}
+};
 
 const makeUser = (user, isOnline) => {
 	const posts = user.posts.map((post) => ({
@@ -168,12 +169,12 @@ const makeUser = (user, isOnline) => {
 
 		isOnline,
 		lastSeenOnline: user.lastSeenOnline,
-		
+
 		birthday: user.birthday,
 		registrationDate: user.registrationDate,
 
 		posts,
 		friends: user.friends,
-		friendRequests: user.friendRequests
-	}
-}
+		friendRequests: user.friendRequests,
+	};
+};
