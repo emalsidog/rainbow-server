@@ -102,6 +102,7 @@ wss.on("connection", function connection(ws) {
 					type: "ONLINE_STATUS",
 					payload: {
 						isOnline: true,
+						id: client.id,
 					},
 				})
 			);

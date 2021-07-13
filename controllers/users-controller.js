@@ -133,6 +133,41 @@ exports.searchUser = async (req, res, next) => {
 	}
 };
 
+// Get last seen
+exports.getOnlineStatus = async (req, res, next) => {
+	const { userId } = req.body;
+
+	try {
+		let isOnline = false;
+
+		req.wss.clients.forEach((client) => {
+			if (client.id === userId) {
+				isOnline = true;
+			}
+		});
+
+		if (isOnline) {
+			return res.status(200).json({
+				isOnline: true,
+				status: "online",
+				lastSeenOnline: undefined,
+			});
+		}
+
+		const { lastSeenOnline } = await User.findById(userId).select(
+			"lastSeenOnline"
+		);
+
+		res.status(200).json({
+			isOnline: false,
+			status: "offline",
+			lastSeenOnline,
+		});
+	} catch (error) {
+		next(error);
+	}
+};
+
 const transformUsers = (users, limit) => {
 	let hasMoreData = true;
 	const tranformedUsers = users.map((user) => {
