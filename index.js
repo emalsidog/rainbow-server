@@ -96,13 +96,20 @@ wss.on("connection", function connection(ws) {
 
 		ws.send(JSON.stringify({ type: "CONNECTED_USER_ID", id }));
 
+		let onlineClientsIds = [];
+		wss.clients.forEach((client) => {
+			onlineClientsIds.push(client.id);
+		});
+
+		ws.send(JSON.stringify({ type: "ONLINE_CLIENTS", onlineClientsIds }));
+
 		wss.clients.forEach((client) => {
 			client.send(
 				JSON.stringify({
 					type: "ONLINE_STATUS",
 					payload: {
 						isOnline: true,
-						id: client.id,
+						id,
 					},
 				})
 			);
@@ -180,7 +187,7 @@ wss.on("connection", function connection(ws) {
 					type: "ONLINE_STATUS",
 					payload: {
 						isOnline: false,
-						lastSeenOnline,
+						id: ws.id,
 					},
 				})
 			);

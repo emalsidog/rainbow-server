@@ -11,6 +11,6 @@ router.get("/:id", authenticate, Users.getUser);
 
 router.post("/search", authenticate, Users.searchUser);
 
-router.post("/last-seen", Users.getOnlineStatus);
+router.post("/last-seen", Users.getLastSeen);
 
 module.exports = router;

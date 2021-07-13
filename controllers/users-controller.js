@@ -39,21 +39,13 @@ exports.getUser = async (req, res, next) => {
 			);
 		}
 
-		let isOnline = false;
-
-		req.wss.clients.forEach((client) => {
-			if (user._id.toString() === client.id) {
-				isOnline = true;
-			}
-		});
-
 		return res.status(200).json({
 			status: {
 				isError: false,
 				message: "Done",
 			},
 			body: {
-				user: makeUser(user, isOnline),
+				user: makeUser(user),
 				isCurrentUser: id === req.user.profileId,
 			},
 		});
@@ -134,33 +126,15 @@ exports.searchUser = async (req, res, next) => {
 };
 
 // Get last seen
-exports.getOnlineStatus = async (req, res, next) => {
+exports.getLastSeen = async (req, res, next) => {
 	const { userId } = req.body;
 
 	try {
-		let isOnline = false;
-
-		req.wss.clients.forEach((client) => {
-			if (client.id === userId) {
-				isOnline = true;
-			}
-		});
-
-		if (isOnline) {
-			return res.status(200).json({
-				isOnline: true,
-				status: "online",
-				lastSeenOnline: undefined,
-			});
-		}
-
 		const { lastSeenOnline } = await User.findById(userId).select(
 			"lastSeenOnline"
 		);
 
 		res.status(200).json({
-			isOnline: false,
-			status: "offline",
 			lastSeenOnline,
 		});
 	} catch (error) {
@@ -184,14 +158,7 @@ const transformUsers = (users, limit) => {
 	return [tranformedUsers, hasMoreData];
 };
 
-const makeUser = (user, isOnline) => {
-	const posts = user.posts.map((post) => ({
-		postText: post.postText,
-		isPublic: post.isPublic,
-		postId: post._id,
-		timePosted: post.timePosted,
-	}));
-
+const makeUser = (user) => {
 	return {
 		_id: user._id,
 		profileId: user.profileId,
@@ -202,13 +169,9 @@ const makeUser = (user, isOnline) => {
 		familyName: user.familyName,
 		role: user.role,
 
-		isOnline,
-		lastSeenOnline: user.lastSeenOnline,
-
 		birthday: user.birthday,
 		registrationDate: user.registrationDate,
 
-		posts,
 		friends: user.friends,
 		friendRequests: user.friendRequests,
 	};
