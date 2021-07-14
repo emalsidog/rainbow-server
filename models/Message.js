@@ -22,6 +22,13 @@ const MessageSchema = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
+	isEdited: {
+		type: Boolean,
+		default: false,
+	},
+	timeEdited: {
+		type: Date,
+	},
 });
 
 module.exports = Message = mongoose.model("Message", MessageSchema);

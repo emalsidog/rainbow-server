@@ -190,6 +190,41 @@ wss.on("connection", function connection(ws) {
 				break;
 			}
 
+			case "EDIT_MESSAGE": {
+				const { data, recipients } = response.payload;
+
+				wss.clients.forEach((client) => {
+					if (recipients.includes(client.id)) {
+						client.send(
+							JSON.stringify({
+								type: "EDIT_MESSAGE",
+								payload: data,
+							})
+						);
+					}
+				});
+
+				try {
+					const {
+						meta,
+						updatedMessageFields: { text, dataEdited },
+					} = data;
+
+					await Message.findOneAndUpdate(
+						{ messageId: meta.messageId },
+						{
+							text,
+							isEdited: true,
+							timeEdited: dataEdited,
+						}
+					);
+				} catch (error) {
+					throw error;
+				}
+
+				break;
+			}
+
 			case "CHANGE_CHAT_PROCESS": {
 				const { process, chatId, whoInAction, chatParticipantsIds } =
 					response.payload;
