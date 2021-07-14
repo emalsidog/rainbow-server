@@ -156,6 +156,40 @@ wss.on("connection", function connection(ws) {
 				break;
 			}
 
+			case "DELETE_MESSAGE": {
+				const { messageData, recipients } = response.payload;
+				const { chatId, messageId } = messageData;
+
+				wss.clients.forEach((client) => {
+					if (recipients.includes(client.id)) {
+						client.send(
+							JSON.stringify({
+								type: "DELETE_MESSAGE",
+								payload: messageData,
+							})
+						);
+					}
+				});
+
+				try {
+					const chat = await Chat.findOne({ chatId });
+
+					if (!chat) {
+						throw new Error("Can not find chat");
+					}
+
+					chat.messages = chat.messages.filter(
+						(message) => message.messageId !== messageId
+					);
+
+					await chat.save();
+					await Message.findOneAndDelete({ messageId });
+				} catch (error) {
+					throw error;
+				}
+				break;
+			}
+
 			case "CHANGE_CHAT_PROCESS": {
 				const { process, chatId, whoInAction, chatParticipantsIds } =
 					response.payload;
