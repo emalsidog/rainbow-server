@@ -158,7 +158,7 @@ wss.on("connection", function connection(ws) {
 
 			case "DELETE_MESSAGE": {
 				const { messageData, recipients } = response.payload;
-				const { chatId, messageId } = messageData;
+				const { chatId, messagesToDelete } = messageData;
 
 				wss.clients.forEach((client) => {
 					if (recipients.includes(client.id)) {
@@ -173,17 +173,17 @@ wss.on("connection", function connection(ws) {
 
 				try {
 					const chat = await Chat.findOne({ chatId });
-
-					if (!chat) {
-						throw new Error("Can not find chat");
-					}
+					if (!chat) throw new Error("Can not find chat");
 
 					chat.messages = chat.messages.filter(
-						(message) => message.messageId !== messageId
+						(message) =>
+							!messagesToDelete.includes(message.messageId)
 					);
 
 					await chat.save();
-					await Message.findOneAndDelete({ messageId });
+					await Message.deleteMany({
+						messageId: { $in: messagesToDelete },
+					});
 				} catch (error) {
 					throw error;
 				}
