@@ -10,6 +10,7 @@ const jwt = require("jsonwebtoken");
 
 // Utils
 const ErrorResponse = require("./utils/error-response");
+const websocket = require("./utils/websockets-functions");
 
 // Models
 const User = require("./models/User");
@@ -131,44 +132,36 @@ wss.on("connection", function connection(ws) {
 			case "ADD_MESSAGE": {
 				const { message, recipients } = response.payload;
 
-				wss.clients.forEach((client) => {
-					if (recipients.includes(client.id)) {
-						client.send(
-							JSON.stringify({
-								type: "ADD_MESSAGE",
-								payload: message,
-							})
-						);
-					}
+				websocket.sendToRecipients(wss, recipients, {
+					type: "ADD_MESSAGE",
+					payload: message,
 				});
 
-				const chat = await Chat.findOne({ chatId: message.chatId });
-				if (!chat) throw new Error("Error");
+				try {
+					const chat = await Chat.findOne({ chatId: message.chatId });
+					if (!chat) throw new Error("Error");
 
-				const newMessage = new Message({
-					...message,
-				});
-				chat.messages.push(newMessage._id);
+					const newMessage = new Message({
+						...message,
+					});
+					chat.messages.push(newMessage._id);
 
-				await chat.save();
-				await newMessage.save();
+					await chat.save();
+					await newMessage.save();
 
-				break;
+					break;
+				} catch (error) {
+					throw error;
+				}
 			}
 
 			case "DELETE_MESSAGE": {
 				const { messageData, recipients } = response.payload;
 				const { chatId, messagesToDelete } = messageData;
 
-				wss.clients.forEach((client) => {
-					if (recipients.includes(client.id)) {
-						client.send(
-							JSON.stringify({
-								type: "DELETE_MESSAGE",
-								payload: messageData,
-							})
-						);
-					}
+				websocket.sendToRecipients(wss, recipients, {
+					type: "DELETE_MESSAGE",
+					payload: messageData,
 				});
 
 				try {
@@ -193,21 +186,15 @@ wss.on("connection", function connection(ws) {
 			case "EDIT_MESSAGE": {
 				const { data, recipients } = response.payload;
 
-				wss.clients.forEach((client) => {
-					if (recipients.includes(client.id)) {
-						client.send(
-							JSON.stringify({
-								type: "EDIT_MESSAGE",
-								payload: data,
-							})
-						);
-					}
+				websocket.sendToRecipients(wss, recipients, {
+					type: "EDIT_MESSAGE",
+					payload: data,
 				});
 
 				try {
 					const {
 						meta,
-						updatedMessageFields: { text, dataEdited },
+						updatedMessageFields: { text, dateEdited },
 					} = data;
 
 					await Message.findOneAndUpdate(
@@ -215,7 +202,7 @@ wss.on("connection", function connection(ws) {
 						{
 							text,
 							isEdited: true,
-							timeEdited: dataEdited,
+							timeEdited: dateEdited,
 						}
 					);
 				} catch (error) {
