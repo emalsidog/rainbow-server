@@ -197,7 +197,7 @@ exports.friendRequest = async (req, res, next) => {
 					},
 				},
 				serverData: {
-					currentUserId: currentUser._id,
+					newRequestId: currentUser._id,
 					requestsCount: userToAddToFriends.friendRequests.length,
 				},
 			},
@@ -284,6 +284,7 @@ exports.acceptFriendRequest = async (req, res, next) => {
 				message: "Request accepted",
 			},
 			body: {
+				idOfUserWhoAccepted: currentUser._id,
 				newFriendId: userToAccept._id,
 				requestsCount: currentUser.friendRequests.length,
 			},
@@ -327,7 +328,7 @@ exports.declineFriendRequest = async (req, res, next) => {
 			payload: {
 				serverData: {
 					declinedRequestId: id,
-					idOfUserWhoDeclined: user._id,
+					userToUpdate: user._id,
 				},
 			},
 		};
@@ -386,7 +387,7 @@ exports.cancelFriendRequest = async (req, res, next) => {
 			type: "FRIEND_REQUEST_CANCELLED",
 			payload: {
 				serverData: {
-					idOfUserWhoCancelled: req.user._id,
+					cancelledRequestId: req.user._id,
 					requestsCount: user.friendRequests.length,
 				},
 			},
@@ -404,8 +405,8 @@ exports.cancelFriendRequest = async (req, res, next) => {
 				message: "Request cancelled",
 			},
 			body: {
-				idOfUserWhoCancelled: req.user._id,
-				userWhoHasRequest: id,
+				cancelledRequestId: req.user._id,
+				userToUpdate: id,
 			},
 		});
 	} catch (error) {
@@ -456,10 +457,7 @@ exports.removeFromFriends = async (req, res, next) => {
 		const webSocketPayload = {
 			type: "FRIEND_REMOVED",
 			payload: {
-				serverData: {
-					idOfUserWhoHasFriend: userToRemove._id,
-					idOfUserToRemove: currentUser._id,
-				},
+				removedFriendId: currentUser._id,
 			},
 		};
 
@@ -475,8 +473,7 @@ exports.removeFromFriends = async (req, res, next) => {
 				message: "Removed :(",
 			},
 			body: {
-				idOfUserToRemove: userToRemove._id,
-				idOfUserWhoHasFriend: currentUser._id,
+				removedFriendId: userToRemove._id,
 			},
 		});
 	} catch (error) {
