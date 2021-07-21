@@ -120,7 +120,12 @@ exports.getChats = async (req, res, next) => {
 			})
 			.populate({
 				path: "messages",
-			});
+
+				populate: {
+					path: 'repliedToMessages',
+					model: 'Message'
+				}
+			})
 
 		res.status(200).json({
 			status: {

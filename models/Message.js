@@ -2,6 +2,7 @@
 const mongoose = require("mongoose");
 
 const MessageSchema = new mongoose.Schema({
+	_id: String,
 	text: {
 		type: String,
 		required: true,
@@ -29,6 +30,12 @@ const MessageSchema = new mongoose.Schema({
 	timeEdited: {
 		type: Date,
 	},
+	repliedToMessages: [
+		{
+			type: String,
+			ref: "Message",
+		},
+	],
 });
 
 module.exports = Message = mongoose.model("Message", MessageSchema);

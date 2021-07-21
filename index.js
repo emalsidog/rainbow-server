@@ -143,7 +143,9 @@ wss.on("connection", function connection(ws) {
 
 					const newMessage = new Message({
 						...message,
+						_id: message.messageId
 					});
+
 					chat.messages.push(newMessage._id);
 
 					await chat.save();
@@ -210,6 +212,37 @@ wss.on("connection", function connection(ws) {
 				}
 
 				break;
+			}
+
+			case "FORWARD_MESSAGE": {
+				const { message, recipients } = response.payload;
+
+				websocket.sendToRecipients(wss, recipients, {
+					type: "FORWARD_MESSAGE",
+					payload: message,
+				});
+
+				try {
+					const chat = await Chat.findOne({ chatId: message.chatId });
+					if (!chat) throw new Error("Error");
+
+					const repliedToMessages = message.repliedToMessages.map(({ messageId }) => messageId);
+
+					const newMessage = new Message({
+						...message,
+						_id: message.messageId,
+						repliedToMessages
+					});
+
+					chat.messages.push(newMessage._id);
+
+					await chat.save();
+					await newMessage.save();
+
+					break;
+				} catch (error) {
+					throw error;
+				}
 			}
 
 			case "CHANGE_CHAT_PROCESS": {
