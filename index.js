@@ -170,10 +170,7 @@ wss.on("connection", function connection(ws) {
 					const chat = await Chat.findOne({ chatId });
 					if (!chat) throw new Error("Can not find chat");
 
-					chat.messages = chat.messages.filter(
-						(message) =>
-							!messagesToDelete.includes(message.messageId)
-					);
+					chat.messages = chat.messages.filter((message) => !messagesToDelete.includes(message));
 
 					await chat.save();
 					await Message.deleteMany({
