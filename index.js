@@ -212,29 +212,50 @@ wss.on("connection", function connection(ws) {
 			}
 
 			case "FORWARD_MESSAGE": {
-				const { message, recipients } = response.payload;
+				const { recipients, ...rest } = response.payload;
 
 				websocket.sendToRecipients(wss, recipients, {
 					type: "FORWARD_MESSAGE",
-					payload: message,
+					payload: rest
 				});
 
 				try {
-					const chat = await Chat.findOne({ chatId: message.chatId });
-					if (!chat) throw new Error("Error");
 
-					const repliedToMessages = message.repliedToMessages.map(({ messageId }) => messageId);
+					if (rest.type === "SINGLE_FORWARDED") {
+						const chat = await Chat.findOne({ chatId: rest.message.chatId });
+						if (!chat) throw new Error("Error");
 
-					const newMessage = new Message({
-						...message,
-						_id: message.messageId,
-						repliedToMessages
-					});
+						const newMessage = new Message({
+							...rest.message,
+							repliedToMessage: rest.message.repliedToMessage.messageId,
+							_id: rest.message.messageId,
+						});
 
-					chat.messages.push(newMessage._id);
+						chat.messages.push(newMessage._id);
 
-					await chat.save();
-					await newMessage.save();
+						await chat.save();
+						await newMessage.save();
+
+						return;
+					}
+
+					if (rest.type === "MULTIPLE_FORWARDED") {
+						const chat = await Chat.findOne({ chatId: rest.meta.chatId });
+						if (!chat) throw new Error("Error");
+
+						const mongoDocs = rest.messages.map((message) => new Message({ ...message, _id: message.messageId }));
+						
+						for (let doc of mongoDocs) {
+							await doc.save();
+						}
+
+						const forwardedMessagesIds = rest.messages.map(({ messageId }) => messageId);
+
+						chat.messages.push(...forwardedMessagesIds);
+						await chat.save();
+
+						return;
+					}
 
 					break;
 				} catch (error) {

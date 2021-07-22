@@ -122,7 +122,7 @@ exports.getChats = async (req, res, next) => {
 				path: "messages",
 
 				populate: {
-					path: 'repliedToMessages',
+					path: 'repliedToMessage',
 					model: 'Message'
 				}
 			})

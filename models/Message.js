@@ -30,12 +30,14 @@ const MessageSchema = new mongoose.Schema({
 	timeEdited: {
 		type: Date,
 	},
-	repliedToMessages: [
-		{
-			type: String,
-			ref: "Message",
-		},
-	],
+	repliedToMessage: {
+		type: String,
+		ref: "Message",
+	},
+	isForwarded: {
+		type: Boolean,
+		default: false,
+	},
 });
 
 module.exports = Message = mongoose.model("Message", MessageSchema);
